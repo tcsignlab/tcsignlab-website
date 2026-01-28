@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed - TC SignLab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #E63946, #1D3557);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 1s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        h1 {
+            color: #28A745;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .order-id {
+            background: #F8F9FA;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-weight: 600;
+            color: #1D3557;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 35px;
+            margin: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #E63946;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #D62828;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            border: 2px solid #E63946;
+            color: #E63946;
+        }
+        
+        .btn-outline:hover {
+            background: #E63946;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Order Confirmed!</h1>
+        <p>Thank you for your order. We've received your payment and will begin production shortly.</p>
+        <p>A confirmation email has been sent to your email address.</p>
+        
+        <div class="order-id" id="orderInfo">
+            Order ID: Loading...
+        </div>
+        
+        <div>
+            <a href="/dashboard.html#orders" class="btn btn-primary">View Order Details</a>
+            <a href="/products.html" class="btn btn-outline">Continue Shopping</a>
+        </div>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+        
+        if (orderId) {
+            document.getElementById('orderInfo').textContent = `Order ID: ${orderId}`;
+        } else {
+            document.getElementById('orderInfo').textContent = 'Order confirmed!';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TC SignLab - Custom Signs & Graphics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #E63946;
+            --secondary: #1D3557;
+            --accent: #F77F00;
+            --light: #F8F9FA;
+            --text: #212529;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        
+        /* Header/Navigation */
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo img {
+            height: 50px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #D62828;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            color: white;
+            padding: 120px 30px;
+            text-align: center;
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.85), rgba(29, 53, 87, 0.85));
+            z-index: 2;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero .btn {
+            font-size: 1.1rem;
+            padding: 15px 35px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 30px;
+            background: white;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 40px 30px;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        /* Products Preview */
+        .products-preview {
+            padding: 80px 30px;
+            background: var(--light);
+        }
+        
+        .products-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .product-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .product-info {
+            padding: 25px;
+        }
+        
+        .product-info h3 {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        
+        .product-info p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        /* CTA Section */
+        .cta {
+            padding: 80px 30px;
+            background: var(--secondary);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 60px 30px 30px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .footer-section p,
+        .footer-section a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .social-links a {
+            color: white;
+            transition: color 0.2s;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            margin-top: 10px;
+            min-width: 200px;
+        }
+        
+        .user-dropdown.active {
+            display: block;
+        }
+        
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        
+        .user-dropdown a:hover {
+            background: var(--light);
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .features-grid,
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav">
+            <a href="/" class="logo">
+                <img src="tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+                <span>TC SignLab</span>
+            </a>
+            <div class="nav-links">
+                <a href="/products.html">Products</a>
+                <a href="/configurator.html">Design Tool</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <div class="user-menu" id="userMenu">
+                    <a href="/login.html" class="btn btn-outline" id="loginBtn">Login</a>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/dashboard.html">My Dashboard</a>
+                        <a href="/dashboard.html#orders">My Orders</a>
+                        <a href="#" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="hero-video.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 id="heroTitle">Custom Signs & Graphics for Your Business</h1>
+            <p id="heroSubtitle">Professional quality signs, banners, and graphics delivered fast. From design to installation, we've got you covered.</p>
+            <div class="hero-buttons">
+                <a href="/configurator.html" class="btn btn-primary">Start Designing</a>
+                <a href="/products.html" class="btn btn-outline">View Products</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features">
+        <h2 class="section-title">Why Choose TC SignLab?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Custom Design</h3>
+                <p>Use our interactive design tool to create exactly what you need, or let our team design it for you.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast Turnaround</h3>
+                <p>Most orders ship within 1-5 business days. Need it faster? We offer rush production services.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3>Premium Quality</h3>
+                <p>We use only the best materials and latest printing technology to ensure your signs look amazing.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Great Prices</h3>
+                <p>Competitive pricing with no hidden fees. What you see is what you pay, with free shipping on orders over $150.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚚</div>
+                <h3>Free Shipping</h3>
+                <p>Orders over $150 ship free! We pack carefully to ensure your signs arrive in perfect condition.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Expert Support</h3>
+                <p>Our friendly team is here to help every step of the way, from design to delivery.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Products Preview -->
+    <section class="products-preview">
+        <h2 class="section-title">Popular Products</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">🎪</div>
+                <div class="product-info">
+                    <h3>Custom Banners</h3>
+                    <p>Indoor and outdoor banners in any size. Perfect for events, promotions, and storefronts.</p>
+                    <a href="/configurator.html?product=banner" class="btn btn-primary">Design Yours</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">🪧</div>
+                <div class="product-info">
+                    <h3>Yard Signs</h3>
+                    <p>Durable corrugated plastic signs for real estate, political campaigns, and events.</p>
+                    <a href="/configurator.html?product=yard-sign" class="btn btn-primary">Design Yours</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">🚗</div>
+                <div class="product-info">
+                    <h3>Vehicle Graphics</h3>
+                    <p>Turn your vehicle into a mobile billboard with custom vinyl graphics and wraps.</p>
+                    <a href="/configurator.html?product=vehicle" class="btn btn-primary">Get Quote</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-image">🪟</div>
+                <div class="product-info">
+                    <h3>Window Decals</h3>
+                    <p>Eye-catching window graphics for storefronts, offices, and vehicles.</p>
+                    <a href="/configurator.html?product=decal" class="btn btn-primary">Design Yours</a>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/products.html" class="btn btn-primary">View All Products</a>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Ready to Get Started?</h2>
+        <p>Design your custom sign in minutes and get instant pricing</p>
+        <a href="/configurator.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 15px 40px;">Start Designing Now</a>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>TC SignLab</h3>
+                <p>Professional custom signs and graphics for businesses of all sizes.</p>
+                <div class="social-links" id="socialLinks">
+                    <a href="#" id="facebookLink">📘</a>
+                    <a href="#" id="instagramLink">📷</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="/products.html">Products</a>
+                <a href="/configurator.html">Design Tool</a>
+                <a href="/login.html">Login</a>
+                <a href="#about">About Us</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p id="footerPhone">(866) 555-SIGN</p>
+                <p id="footerEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5b2f3828323c35373a391b3c363a323775383436">[email&#160;protected]</a></p>
+                <p>Port St. Lucie, FL 34984</p>
+            </div>
+            <div class="footer-section">
+                <h3>Business Hours</h3>
+                <p>Monday - Friday: 9am - 6pm</p>
+                <p>Saturday: 10am - 4pm</p>
+                <p>Sunday: Closed</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 TC SignLab. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+        import { auth, onAuthStateChanged, signOut } from './firebase-auth.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        const database = getDatabase();
+        
+        // Check auth state
+        onAuthStateChanged(auth, (user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (user) {
+                loginBtn.textContent = user.email.split('@')[0];
+                loginBtn.onclick = () => {
+                    userDropdown.classList.toggle('active');
+                };
+            } else {
+                loginBtn.textContent = 'Login';
+                loginBtn.href = '/login.html';
+            }
+        });
+        
+        // Load settings for footer
+        async function loadSettings() {
+            const settingsRef = ref(database, 'settings');
+            const snapshot = await get(settingsRef);
+            const settings = snapshot.val();
+            
+            if (settings) {
+                if (settings.businessPhone) {
+                    document.getElementById('footerPhone').textContent = settings.businessPhone;
+                }
+                if (settings.businessEmail) {
+                    document.getElementById('footerEmail').textContent = settings.businessEmail;
+                }
+                if (settings.facebook) {
+                    document.getElementById('facebookLink').href = settings.facebook;
+                }
+                if (settings.instagram) {
+                    document.getElementById('instagramLink').href = settings.instagram;
+                }
+            }
+        }
+        
+        // Logout function
+        window.logout = async function() {
+            try {
+                await 

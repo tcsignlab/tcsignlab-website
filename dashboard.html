@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - TC SignLab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #E63946;
+            --secondary: #1D3557;
+            --success: #28A745;
+            --warning: #FFC107;
+            --light: #F8F9FA;
+            --border: #DEE2E6;
+            --text: #212529;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--text);
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px 30px;
+        }
+        
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo img {
+            height: 40px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 30px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .user-info {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+            font-weight: 700;
+        }
+        
+        .user-info h3 {
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+        
+        .user-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .section-header h2 {
+            color: var(--secondary);
+            font-size: 2rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #D62828;
+        }
+        
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), #D62828);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            opacity: 0.9;
+        }
+        
+        .orders-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .order-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        
+        .order-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .order-id {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+        
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .order-status {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-completed {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-processing {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-shipped {
+            background: #D1ECF1;
+            color: #0C5460;
+        }
+        
+        .order-items {
+            margin-bottom: 15px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: #666;
+        }
+        
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .order-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--secondary);
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #D4EDDA;
+            color: #155724;
+            border: 2px solid #C3E6CB;
+        }
+        
+        .alert-info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border: 2px solid #BEE5EB;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: sticky;
+                top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <nav class="nav">
+            <a href="/" class="logo">
+                <img src="tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+                <span>TC SignLab</span>
+            </a>
+            <div class="nav-links">
+                <a href="/products.html">Products</a>
+                <a href="/configurator.html">Design Tool</a>
+                <a href="/" onclick="logout(); return false;">Logout</a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <h3 id="userName">Loading...</h3>
+                <p id="userEmail"></p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#overview" class="active" onclick="showSection('overview')">📊 Overview</a></li>
+                <li><a href="#orders" onclick="showSection('orders')">📦 My Orders</a></li>
+                <li><a href="#designs" onclick="showSection('designs')">🎨 Saved Designs</a></li>
+                <li><a href="#profile" onclick="showSection('profile')">👤 Profile</a></li>
+                <li><a href="#settings" onclick="showSection('settings')">⚙️ Settings</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section id="overviewSection" class="section active">
+                <div class="section-header">
+                    <h2>Dashboard Overview</h2>
+                    <a href="/configurator.html" class="btn btn-primary">+ New Design</a>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalOrders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, var(--success), #20873a);">
+                        <div class="stat-number" id="completedOrders">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #F77F00, #e07000);">
+                        <div class="stat-number" id="savedDesigns">0</div>
+                        <div class="stat-label">Saved Designs</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: var(--secondary);">Recent Orders</h3>
+                <div id="recentOrders"></div>
+            </section>
+            
+            <!-- Orders Section -->
+            <section id="ordersSection" class="section">
+                <div class="section-header">
+                    <h2>My Orders</h2>
+                    <select onchange="filterOrders(this.value)" style="padding: 10px; border: 2px solid var(--border); border-radius: 6px;">
+                        <option value="all">All Orders</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                
+                <div id="allOrders"></div>
+            </section>
+            
+            <!-- Saved Designs Section -->
+            <section id="designsSection" class="section">
+                <div class="section-header">
+                    <h2>Saved Designs</h2>
+                    <a href="/configurator.html" class="btn btn-primary">+ Create New</a>
+                </div>
+                
+                <div id="savedDesignsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎨</div>
+                        <h3>No saved designs yet</h3>
+                        <p>Start designing and save your creations for later</p>
+                        <a href="/configurator.html" class="btn btn-primary" style="margin-top: 20px;">Create Your First Design</a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Profile Section -->
+            <section id="profileSection" class="section">
+                <div class="section-header">
+                    <h2>My Profile</h2>
+                </div>
+                
+                <form id="profileForm" onsubmit="updateProfile(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profileName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="profileEmail" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="profilePhone">
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 30px 0 20px 0;">Default Shipping Address</h3>
+                    <div class="form-group">
+                        <label>Street Address</label>
+                        <input type="text" id="profileStreet">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="profileCity">
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" id="profileState">
+                        </div>
+                        <div class="form-group">
+                            <label>ZIP Code</label>
+                            <input type="text" id="profileZip">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </section>
+            
+            <!-- Settings Section -->
+            <section id="settingsSection" class="section">
+                <div class="section-header">
+                    <h2>Account Settings</h2>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Email Preferences</strong><br>
+                    You'll receive order confirmations and shipping updates at your registered email.
+                </div>
+                
+                <h3 style="margin-bottom: 20px;">Change Password</h3>
+                <form onsubmit="changePassword(event)">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confirmPassword" minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </form>
+            </section>
+        </main>
+    </div>
+    
+    <script type="module">
+        import { auth, database, signOut, onAuthStateChanged, ref, get, set, update } from './firebase-auth.js';
+        
+        let currentUser = null;
+        let allOrdersData = [];
+        
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData(user);
+                await loadOrders(user.uid);
+            } else {
+                window.location.href = '/login.html';
+            }
+        });
+        
+        async function loadUserData(user) {
+            const userRef = ref(database, `users/${user.uid}`);
+            const snapshot = await get(userRef);
+            const userData = snapshot.val();
+            
+            if (userData) {
+                // Update UI
+                document.getElementById('userName').textContent = userData.name || 'User';
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userAvatar').textContent = (userData.name || 'U').charAt(0).toUpperCase();
+                
+                // Populate profile form
+                document.getElementById('profileName').value = userData.name || '';
+                document.getElementById('profileEmail').value = user.email;
+                document.getElementById('profilePhone').value = userData.phone || '';
+                
+                if (userData.address) {
+                    document.getElementById('profileStreet').value = userData.address.street || '';
+                    document.getElementById('profileCity').value = userData.address.city || '';
+                    document.getElementById('profileState').value = userData.address.state || '';
+                    document.getElementById('profileZip').value = userData.address.zip || '';
+                }
+            }
+        }
+        
+        async function loadOrders(userId) {
+            const ordersRef = ref(database, 'orders');
+            const snapshot = await get(ordersRef);
+            const allOrders = snapshot.val() || {};
+            
+            // Filter user's orders
+            allOrdersData = Object.entries(allOrders)
+                .filter(([id, order]) => order.userId === userId)
+                .map(([id, order]) => ({ id, ...order }))
+                .sort((a, b) => b.createdAt - a.createdAt);
+            
+            // Update stats
+            document.getElementById('totalOrders').textContent = allOrdersData.length;
+            document.getElementById('completedOrders').textContent = 
+                allOrdersData.filter(o => o.status === 'completed').length;
+            
+            // Display recent orders (last 3)
+            displayOrders(allOrdersData.slice(0, 3), 'recentOrders');
+            
+            // Display all orders
+            displayOrders(allOrdersData, 'allOrders');
+        }
+        
+        function displayOrders(orders, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h3>No orders yet</h3>
+                        <p>Start designing your first custom sign!</p>
+                        <a href="/configurator.html" class="btn btn-primary" style="margin-top: 20px;">Create Design</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id.substr(-8)}</div>
+                            <div class="order-date">${new Date(order.createdAt).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            })}</div>
+                        </div>
+                        <span class="order-status status-${order.status || 'processing'}">
+                            ${(order.status || 'processing').charAt(0).toUpperCase() + (order.status || 'processing').slice(1)}
+                        </span>
+                    </div>
+                    
+                    <div class="order-items">
+                        ${order.items ? order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name || 'Custom Sign'} (${item.size || 'Custom Size'})</span>
+                                <span>${item.quantity || 1}x</span>
+                            </div>
+                        `).join('') : '<div class="order-item"><span>Custom Order</span></div>'}
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div class="order-total">$${(order.total || 0).toFixed(2)}</div>
+                        <div class="order-actions">
+                            <button class="btn btn-sm btn-outline" onclick="viewOrder('${order.id}')">View Details</button>
+                            <button class="btn btn-sm btn-primary" onclick="reorder('${order.id}')">Reorder</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        window.filterOrders = function(status) {
+            const filtered = status === 'all' 
+                ? allOrdersData 
+                : allOrdersData.filter(o => o.status === status);
+            displayOrders(filtered, 'allOrders');
+        };
+        
+        window.viewOrder = function(orderId) {
+            const order = allOrdersData.find(o => o.id === orderId);
+            if (order) {
+                alert(`Order Details:\n\nOrder ID: ${orderId}\nStatus: ${order.status}\nTotal: $${order.total}\n\n(Full order details view coming soon)`);
+            }
+        };
+        
+        window.reorder = async function(orderId) {
+            const order = allOrdersData.find(o => o.id === orderId);
+            if (order && order.items) {
+                // Save order items to localStorage for configurator
+                localStorage.setItem('reorderItems', JSON.stringify(order.items));
+                window.location.href = '/configurator.html?reorder=true';
+            }
+        };
+        
+        window.showSection = function(section) {
+            // Update sidebar
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section + 'Section').classList.add('active');
+        };
+        
+        window.updateProfile = async function(e) {
+            e.preventDefault();
+            
+            if (!currentUser) return;
+            
+            const profileData = {
+                name: document.getElementById('profileName').value,
+                phone: document.getElementById('profilePhone').value,
+                address: {
+                    street: document.getElementById('profileStreet').value,
+                    city: document.getElementById('profileCity').value,
+                    state: document.getElementById('profileState').value,
+                    zip: document.getElementById('profileZip').value
+                }
+            };
+            
+            try {
+                await update(ref(database, `users/${currentUser.uid}`), profileData);
+                alert('Profile updated successfully!');
+                loadUserData(currentUser);
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('Error updating profile');
+            }
+        };
+        
+        window.changePassword = async function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Password change would require reauthentication
+            alert('Password change functionality requires reauthentication. Please contact support or use Firebase Console.');
+        };
+        
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+    </script>
+</body>
+</html>
