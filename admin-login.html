@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - TC SignLab</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #E63946, #1D3557);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: #1D3557;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .shield { font-size: 3rem; margin-bottom: 15px; }
+        
+        .login-header h1 { font-size: 2rem; margin-bottom: 10px; }
+        
+        .login-body { padding: 40px 30px; }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.show { display: block; }
+        
+        .alert-error {
+            background: #F8D7DA;
+            color: #721C24;
+            border: 2px solid #F5C6CB;
+        }
+        
+        .alert-info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border: 2px solid #BEE5EB;
+        }
+        
+        .form-group { margin-bottom: 25px; }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1D3557;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #DEE2E6;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #E63946;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: #E63946;
+            color: white;
+        }
+        
+        .btn:hover { background: #D62828; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #E63946; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="shield">🔐</div>
+            <h1>Admin Access</h1>
+            <p>TC SignLab Administration Panel</p>
+        </div>
+        
+        <div class="login-body">
+            <div id="alertBox" class="alert"></div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="passwordInput" required>
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    🔓 Access Admin Panel
+                </button>
+            </form>
+            
+            <div class="back-link">
+                <a href="/">← Back to Homepage</a>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        
+        function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+        }
+        
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verifying...';
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const userId = userCredential.user.uid;
+                
+                const userRef = ref(database, `users/${userId}`);
+                const snapshot = await get(userRef);
+                const userData = snapshot.val();
+                
+                if (userData && userData.role === 'admin') {
+                    sessionStorage.setItem('adminAuth', 'true');
+                    sessionStorage.setItem('adminUser', JSON.stringify({
+                        uid: userId,
+                        email: email,
+                        name: userData.name
+                    }));
+                    
+                    showAlert('✓ Access Granted!', 'info');
+                    setTimeout(() => window.location.href = '/admin-pro.html', 1000);
+                } else {
+                    throw new Error('ACCESS_DENIED');
+                }
+            } catch (error) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🔓 Access Admin Panel';
+                
+                if (error.message === 'ACCESS_DENIED') {
+                    showAlert('🚫 Access Denied: Admin privileges required');
+                } else if (error.code === 'auth/wrong-password') {
+                    showAlert('❌ Incorrect password');
+                } else {
+                    showAlert('❌ Login failed');
+                }
+            }
+        };
+    </script>
+</body>
+</html>
