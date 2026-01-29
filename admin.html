@@ -1498,12 +1498,14 @@
                 `;
             }
         }
-   const IMGBB_API_KEY = '4d1a8206331234797988c3fdda3ce088';
+// ImgBB configuration
+const IMGBB_API_KEY = '4d1a8206331234797988c3fdda3ce088';
 
 window.uploadToImgBB = async function(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    // Show progress
     document.getElementById('uploadProgress').style.display = 'block';
     document.getElementById('uploadStatus').textContent = 'Uploading...';
     
@@ -1515,20 +1517,46 @@ window.uploadToImgBB = async function(event) {
             method: 'POST',
             body: formData
         });
-        
         const data = await response.json();
         
         if (data.success) {
+            // Success!
             document.getElementById('productImageUrl').value = data.data.url;
+            document.getElementById('progressBar').style.width = '100%';
             document.getElementById('uploadStatus').textContent = '✓ Upload complete!';
+            document.getElementById('uploadStatus').style.color = '#28A745';
+            
+            // Show preview
             document.getElementById('imagePreview').innerHTML = `
-                <img src="${data.data.url}" style="max-width:200px; border-radius:8px;">
+                <img src="${data.data.url}" style="max-width:200px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <button onclick="removeImage()" style="display:block; margin-top:10px; padding:8px 16px; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer;">Remove Image</button>
             `;
+            
+            setTimeout(() => {
+                document.getElementById('uploadProgress').style.display = 'none';
+            }, 2000);
         }
     } catch (error) {
         console.error('Upload error:', error);
         document.getElementById('uploadStatus').textContent = '✗ Upload failed';
+        document.getElementById('uploadStatus').style.color = '#dc3545';
     }
+};
+
+window.removeImage = function() {
+    document.getElementById('productImageUrl').value = '';
+    document.getElementById('imagePreview').innerHTML = '';
+    document.getElementById('productImage').value = '';
+};
+
+const product = {
+    name: document.getElementById('productName').value,
+    category: document.getElementById('productCategory').value,
+    basePrice: parseFloat(document.getElementById('productPrice').value),
+    description: document.getElementById('productDescription').value,
+    active: document.getElementById('productActive').value === 'true',
+    imageUrl: document.getElementById('productImageUrl').value || '',
+    sortOrder: 0
 };
     </script>
 </body>
