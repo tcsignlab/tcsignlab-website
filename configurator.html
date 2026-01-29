@@ -479,8 +479,15 @@
                 <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                     <div class="upload-icon">📤</div>
                     <h3>Click to upload or drag & drop</h3>
-                    <p>PNG, JPG, PDF up to 60MB</p>
-                    <input type="file" id="fileInput" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+                    <p>PNG, JPG up to 32MB</p>
+                    <input type="file" id="fileInput" accept="image/*" onchange="uploadToImgBB(event)">
+                </div>
+                
+                <div id="uploadProgress" style="display: none; margin-top: 10px;">
+                    <div style="background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="progressBar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <div id="uploadStatus" style="margin-top: 5px; font-size: 0.9rem; font-weight: 600; color: var(--text-light);"></div>
                 </div>
                 
                 <div class="image-controls" id="imageControls" style="display: none;">
@@ -540,12 +547,16 @@
         let uploadedImage = null;
         let zoomLevel = 1;
         let imageMode = 'fit'; // 'fit' or 'fill'
+        let designImageUrl = '';
         
         let products = {};
         let categories = {};
         let materials = {};
         let sizes = {};
         let finishing = {};
+        
+        // ImgBB configuration
+        const IMGBB_API_KEY = '4d1a8206331234797988c3fdda3ce088';
         
         // Initialize
         onAuthStateChanged(auth, (user) => {
@@ -793,22 +804,55 @@
             }
         }
         
-        window.handleFileUpload = function(event) {
+        window.uploadToImgBB = async function(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    uploadedImage = img;
-                    checkAspectRatio();
-                    drawCanvas();
-                    document.getElementById('imageControls').style.display = 'flex';
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            // Show progress
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('uploadStatus').textContent = 'Uploading...';
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Success!
+                    designImageUrl = data.data.url;
+                    document.getElementById('progressBar').style.width = '100%';
+                    document.getElementById('uploadStatus').textContent = '✓ Upload complete!';
+                    document.getElementById('uploadStatus').style.color = '#28A745';
+                    
+                    // Load and preview the image
+                    const img = new Image();
+                    img.onload = function() {
+                        uploadedImage = img;
+                        checkAspectRatio();
+                        drawCanvas();
+                        document.getElementById('imageControls').style.display = 'flex';
+                    };
+                    img.src = designImageUrl;
+                    
+                    setTimeout(() => {
+                        document.getElementById('uploadProgress').style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error('ImgBB upload failed');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                document.getElementById('uploadStatus').textContent = '✗ Upload failed';
+                document.getElementById('uploadStatus').style.color = '#dc3545';
+                setTimeout(() => {
+                    document.getElementById('uploadProgress').style.display = 'none';
+                }, 2000);
+            }
         };
         
         function checkAspectRatio() {
@@ -848,6 +892,7 @@
         
         window.removeImage = function() {
             uploadedImage = null;
+            designImageUrl = '';
             document.getElementById('fileInput').value = '';
             document.getElementById('imageControls').style.display = 'none';
             document.getElementById('aspectWarning').innerHTML = '';
@@ -896,8 +941,7 @@
             uploadArea.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
             if (file) {
-                document.getElementById('fileInput').files = e.dataTransfer.files;
-                handleFileUpload({ target: { files: [file] } });
+                uploadToImgBB({ target: { files: [file] } });
             }
         });
         
@@ -924,7 +968,7 @@
                 return;
             }
             
-            if (!uploadedImage) {
+            if (!designImageUrl) {
                 alert('⚠️ Please upload your design file to request a quote.');
                 return;
             }
@@ -944,22 +988,18 @@
             formData.append('Finishing', item.finishing);
             formData.append('Quantity', item.quantity);
             formData.append('Total', item.total);
+            formData.append('Design URL', designImageUrl);
             
-            // Convert canvas to blob and attach
-            canvas.toBlob(async (blob) => {
-                formData.append('Design File', blob, 'design-preview.png');
+            try {
+                await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                try {
-                    await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    alert('✅ Quote request sent! We\'ll respond within 24 hours.');
-                } catch (error) {
-                    alert('❌ Error sending quote request. Please try again.');
-                }
-            });
+                alert('✅ Quote request sent! We\'ll respond within 24 hours.');
+            } catch (error) {
+                alert('❌ Error sending quote request. Please try again.');
+            }
         };
         
         window.saveDesign = async function() {
@@ -1029,6 +1069,7 @@
                 finishing: finishing[finishingId].name,
                 quantity,
                 total,
+                imageUrl: designImageUrl,
                 timestamp: Date.now()
             };
         }
