@@ -1140,7 +1140,41 @@ window.logout = function() {
         updateSyncStatus('error', 'Error');
     }
 };
-        window.editProduct = async function(id) {
+        window.editProduct = async function(productId) {
+    const productRef = ref(database, `products/${productId}`);
+    const snapshot = await get(productRef);
+    const product = snapshot.val();
+    
+    if (!product) return;
+    
+    // Fill basic fields
+    document.getElementById('productName').value = product.name;
+    document.getElementById('productCategory').value = product.category;
+    document.getElementById('productPrice').value = product.basePrice;
+    document.getElementById('productDescription').value = product.description || '';
+    document.getElementById('productActive').value = product.active ? 'true' : 'false';
+    
+    // Load material options
+    document.getElementById('materialOptionsList').innerHTML = '';
+    if (product.materialOptions && product.materialOptions.length > 0) {
+        product.materialOptions.forEach(mat => {
+            addMaterialOption();
+            const lastOption = document.querySelector('.material-option:last-child');
+            lastOption.querySelector('.material-name').value = mat.name;
+            lastOption.querySelector('.material-price').value = mat.priceModifier;
+            lastOption.querySelector('.material-maxwidth').value = mat.maxWidth;
+            lastOption.querySelector('.material-maxheight').value = mat.maxHeight;
+            lastOption.querySelector('.material-description').value = mat.description || '';
+        });
+    }
+    
+    currentEditId = productId;
+    document.getElementById('productSubmitBtn').textContent = 'Update Product';
+    
+    // Scroll to form
+    document.getElementById('productName').scrollIntoView({ behavior: 'smooth' });
+};
+window.editProduct = async function(id) {
             const snapshot = await get(ref(database, `products/${id}`));
             const product = snapshot.val();
             
