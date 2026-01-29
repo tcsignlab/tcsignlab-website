@@ -432,56 +432,46 @@
         }
         
         function displayProducts(products) {
-            const grid = document.getElementById('productsGrid');
-            
-            if (products.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <div class="empty-state-icon">📦</div>
-                        <h3>No products found</h3>
-                        <p>Try adjusting your filters</p>
+    const container = document.getElementById('productsList');
+    
+    if (products.length === 0) {
+        container.innerHTML = '<p>No products yet. Add your first product!</p>';
+        return;
+    }
+    
+    container.innerHTML = products.map(product => `
+        <div class="product-item" style="border:2px solid #dee2e6; padding:20px; border-radius:10px; margin-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div style="flex:1;">
+                    <h3 style="color:#1D3557; margin-bottom:10px;">${product.name}</h3>
+                    <p style="color:#666; margin-bottom:10px;">${product.description || 'No description'}</p>
+                    <div style="display:flex; gap:20px; margin-bottom:10px;">
+                        <span><strong>Base Price:</strong> $${product.basePrice}/sq ft</span>
+                        <span><strong>Category:</strong> ${categories[product.category]?.name || 'N/A'}</span>
+                        <span><strong>Status:</strong> ${product.active ? '✓ Active' : '✗ Inactive'}</span>
                     </div>
-                `;
-                return;
-            }
-            
-            grid.innerHTML = products.map(product => {
-                const categoryName = product.category && categories[product.category] 
-                    ? categories[product.category].name 
-                    : 'Uncategorized';
-                
-                const priceDisplay = isLoggedIn 
-                    ? `<div class="product-price">Starting at $${product.basePrice}/sq ft</div>`
-                    : `<div class="product-price hidden">🔒 Login to see pricing</div>`;
-                
-                const designButton = isLoggedIn
-                    ? `<a href="/configurator.html?product=${product.id}" class="btn btn-primary">Design Yours</a>`
-                    : `<a href="/login.html" class="btn btn-outline">Login to Order</a>`;
-                
-                return `
-                    <div class="product-card" onclick="window.location.href='/configurator.html?product=${product.id}'">
-                        <div class="product-image">
-                            ${product.imageUrl 
-                                ? `<img src="${product.imageUrl}" alt="${product.name}">` 
-                                : '<span style="font-size: 5rem;">🎨</span>'
-                            }
-                            ${product.active ? '<div class="product-badge">Available</div>' : ''}
+                    
+                    ${product.materialOptions && product.materialOptions.length > 0 ? `
+                        <div style="background:#f8f9fa; padding:10px; border-radius:6px; margin-top:10px;">
+                            <strong>Material Options (${product.materialOptions.length}):</strong>
+                            <ul style="margin:5px 0 0 20px;">
+                                ${product.materialOptions.map(mat => `
+                                    <li>${mat.name} (+$${mat.priceModifier}) - Max: ${mat.maxWidth}"W x ${mat.maxHeight}"H</li>
+                                `).join('')}
+                            </ul>
                         </div>
-                        <div class="product-info">
-                            <div class="product-category">${categoryName}</div>
-                            <h3 class="product-name">${product.name}</h3>
-                            <p class="product-description">${product.description || 'Custom design available'}</p>
-                            ${priceDisplay}
-                            <div class="product-actions" onclick="event.stopPropagation();">
-                                ${designButton}
-                                <a href="/configurator.html?product=${product.id}&quote=true" class="btn btn-outline">Get Quote</a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
+                    ` : '<p style="color:#dc3545; margin-top:10px;">⚠️ No material options</p>'}
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <button onclick="editProduct('${product.id}')" class="btn btn-sm btn-secondary">Edit</button>
+                    <button onclick="deleteProduct('${product.id}')" class="btn btn-sm btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
         window.filterProducts = function() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const categoryFilter = document.getElementById('categoryFilter').value;
