@@ -435,7 +435,10 @@
         .image-upload input {
             display: none;
         }
-    </style>
+    <button onclick="logout()" style="position:absolute; top:20px; right:20px; padding:10px 20px; background:#e63946; color:white; border:none; border-radius:6px; cursor:pointer;">
+    🚪 Logout
+</button>
+</style>
 </head>
 <body>
     <div class="header">
@@ -466,7 +469,6 @@
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('products')">📦 Products</button>
                 <button class="tab" onclick="switchTab('categories')">📁 Categories</button>
-                <button class="tab" onclick="switchTab('materials')">🎨 Materials</button>
                 <button class="tab" onclick="switchTab('sizes')">📏 Sizes</button>
                 <button class="tab" onclick="switchTab('finishing')">✂️ Finishing</button>
                 <button class="tab" onclick="switchTab('shipping')">🚚 Shipping</button>
@@ -490,53 +492,52 @@
                 <div class="card">
                     <h2>📦 Add New Product</h2>
                     <form id="productForm" onsubmit="saveProduct(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Product Name *</label>
-                                <input type="text" id="productName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Category *</label>
-                                <select id="productCategory" required>
-                                    <option value="">Select Category</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Base Price ($/sq ft) *</label>
-                                <input type="number" id="productPrice" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select id="productActive">
-                                    <option value="true">Active</option>
-                                    <option value="false">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="productDescription" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Product Image</label>
-                            <div class="image-upload" onclick="document.getElementById('productImage').click()">
-                                <input type="file" id="productImage" accept="image/*" onchange="uploadToImgBB(event)">
-                                <p>📷 Click to upload image or drag & drop</p>
-                                <small>PNG, JPG up to 5MB</small>
-                            </div>
-                            <input type="hidden" id="productImageUrl">
-                            <div id="imagePreview" style="margin-top: 15px;"></div>
-                            <div id="uploadProgress" style="display: none; margin-top: 10px;">
-                                <div style="background: #e9ecef; height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div id="progressBar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-                                </div>
-                                <div id="uploadStatus" style="margin-top: 5px; font-size: 0.9rem; font-weight: 600; color: var(--text-light);"></div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn btn-primary" id="productSubmitBtn">Add Product</button>
-                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
-                        </div>
+                        <div class="form-section">
+    <h3>Product Information</h3>
+    
+    <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="productName" required>
+    </div>
+    
+    <div class="form-group">
+        <label>Category *</label>
+        <select id="productCategory" required></select>
+    </div>
+    
+    <div class="form-group">
+        <label>Base Price (per sq ft) *</label>
+        <input type="number" id="productPrice" step="0.01" required>
+    </div>
+    
+    <div class="form-group">
+        <label>Description</label>
+        <textarea id="productDescription" rows="3"></textarea>
+    </div>
+<!-- NEW: MATERIAL OPTIONS -->
+    <div class="form-section" style="background:#f8f9fa; padding:20px; border-radius:8px; margin:20px 0;">
+        <h3 style="margin-bottom:15px;">Material Options * (Required)</h3>
+        <p style="color:#666; margin-bottom:15px;">Add at least one material option for this product</p>
+        
+        <div id="materialOptionsList"></div>
+        
+        <button type="button" onclick="addMaterialOption()" class="btn btn-secondary" style="margin-top:10px;">
+            + Add Material Option
+        </button>
+    </div>
+    
+    <div class="form-group">
+        <label>Active Status</label>
+        <select id="productActive">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+    
+    <button type="submit" id="productSubmitBtn" class="btn btn-primary">
+        Add Product
+    </button>
+</div>
                     </form>
                 </div>
                 
@@ -566,8 +567,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="categoryDescription" rows="2"></textarea>
+                            <label>Deion</label>
+                            <textarea id="categoryDeion" rows="2"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Category</button>
                     </form>
@@ -579,37 +580,7 @@
                 </div>
             </div>
             
-            <!-- Materials Tab -->
-            <div id="materialsTab" class="tab-content">
-                <div class="card">
-                    <h2>🎨 Add Material</h2>
-                    <form id="materialForm" onsubmit="saveMaterial(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Material Name *</label>
-                                <input type="text" id="materialName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price Modifier *</label>
-                                <input type="number" id="materialPrice" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Max Width (inches) *</label>
-                                <input type="number" id="materialMaxWidth" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Max Height (inches) *</label>
-                                <input type="number" id="materialMaxHeight" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="materialDescription" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Material</button>
-                    </form>
-                </div>
-                
+            
                 <div class="card">
                     <h2>🎨 All Materials</h2>
                     <div id="materialsList" class="items-list"></div>
@@ -666,8 +637,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="finishingDescription" rows="2"></textarea>
+                            <label>Deion</label>
+                            <textarea id="finishingDeion" rows="2"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Finishing Option</button>
                     </form>
@@ -703,8 +674,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="shippingDescription" rows="2" placeholder="e.g., 5-7 business days"></textarea>
+                            <label>Deion</label>
+                            <textarea id="shippingDeion" rows="2" placeholder="e.g., 5-7 business days"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Shipping Option</button>
                     </form>
@@ -810,6 +781,23 @@
     
     <!-- Firebase SDK -->
     <script type="module">
+        // PASSWORD PROTECTION
+if (!sessionStorage.getItem('adminAuth')) {
+    window.location.href = '/admin-login.html';
+}
+
+// Show logged in user
+const adminUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+console.log('Admin logged in:', adminUser.email);
+
+// Add logout button
+window.logout = function() {
+    if (confirm('Logout from admin panel?')) {
+        sessionStorage.clear();
+        window.location.href = '/admin-login.html';
+    }
+};
+
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue, push, remove, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         
@@ -1072,40 +1060,86 @@
         }
         
         window.saveProduct = async function(e) {
-            e.preventDefault();
-            updateSyncStatus('syncing', 'Syncing...');
-            
-            const product = {
-                name: document.getElementById('productName').value,
-                category: document.getElementById('productCategory').value,
-                basePrice: parseFloat(document.getElementById('productPrice').value),
-                description: document.getElementById('productDescription').value,
-                active: document.getElementById('productActive').value === 'true',
-                imageUrl: document.getElementById('productImageUrl').value || '',
-                sortOrder: 0
-            };
-            
-            try {
-                if (currentEditId) {
-                    await update(ref(database, `products/${currentEditId}`), product);
-                    showNotification('Product updated!');
-                    currentEditId = null;
-                    document.getElementById('productSubmitBtn').textContent = 'Add Product';
-                } else {
-                    await push(ref(database, 'products'), product);
-                    showNotification('Product added!');
-                }
-                e.target.reset();
-                document.getElementById('productImageUrl').value = '';
-                document.getElementById('imagePreview').innerHTML = '';
-                loadProducts();
-                updateSyncStatus('synced', 'Synced');
-            } catch (error) {
-                console.error(error);
-                showNotification('Error saving product', 'error');
-            }
-        };
+    e.preventDefault();
+    
+    // VALIDATION
+    const name = document.getElementById('productName').value;
+    const category = document.getElementById('productCategory').value;
+    const price = document.getElementById('productPrice').value;
+    const materials = getMaterialOptions();
+    
+    // Check required fields
+    if (!name) {
+        alert('⚠️ Product name is required!');
+        document.getElementById('productName').focus();
+        return;
+    }
+    
+    if (!category) {
+        alert('⚠️ Please select a category!');
+        document.getElementById('productCategory').focus();
+        return;
+    }
+    
+    if (!price || price <= 0) {
+        alert('⚠️ Please enter a valid base price!');
+        document.getElementById('productPrice').focus();
+        return;
+    }
+    
+    if (materials.length === 0) {
+        alert('⚠️ Please add at least one material option!');
+        return;
+    }
+    
+    // Validate material options
+    for (let i = 0; i < materials.length; i++) {
+        const mat = materials[i];
+        if (!mat.name) {
+            alert(`⚠️ Material option ${i + 1}: Name is required!`);
+            return;
+        }
+        if (mat.maxWidth <= 0 || mat.maxHeight <= 0) {
+            alert(`⚠️ Material option ${i + 1}: Max dimensions must be greater than 0!`);
+            return;
+        }
+    }
+    
+    updateSyncStatus('syncing', 'Syncing...');
+    
+    const product = {
+        name: name,
+        category: category,
+        basePrice: parseFloat(price),
+        description: document.getElementById('productDescription').value,
+        active: document.getElementById('productActive').value === 'true',
+        materialOptions: materials,
+        imageUrl: document.getElementById('productImageUrl')?.value || '',
+        sortOrder: 0
+    };
+    
+    try {
+        if (currentEditId) {
+            await update(ref(database, `products/${currentEditId}`), product);
+            showNotification('✓ Product updated!');
+            currentEditId = null;
+            document.getElementById('productSubmitBtn').textContent = 'Add Product';
+        } else {
+            await push(ref(database, 'products'), product);
+            showNotification('✓ Product added successfully!');
+        }
         
+        e.target.reset();
+        document.getElementById('materialOptionsList').innerHTML = '';
+        loadProducts();
+        updateSyncStatus('synced', 'Synced');
+        
+    } catch (error) {
+        console.error(error);
+        showNotification('❌ Error saving product', 'error');
+        updateSyncStatus('error', 'Error');
+    }
+};
         window.editProduct = async function(id) {
             const snapshot = await get(ref(database, `products/${id}`));
             const product = snapshot.val();
@@ -1560,6 +1594,69 @@
                 `;
             }
         }
-    </script>
+    let materialOptions = [];
+
+window.addMaterialOption = function() {
+    const optionId = 'mat_' + Date.now();
+    
+    const optionHtml = `
+        <div class="material-option" id="${optionId}" style="border:2px solid #dee2e6; padding:15px; border-radius:8px; margin-bottom:15px; background:white;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h4 style="color:#1D3557;">Material Option</h4>
+                <button type="button" onclick="removeMaterialOption('${optionId}')" style="background:#dc3545; color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer;">
+                    Remove
+                </button>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Material Name *</label>
+                    <input type="text" class="material-name" placeholder="e.g., 13oz Matte Vinyl" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Price Modifier ($) *</label>
+                    <input type="number" class="material-price" step="0.01" value="0" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Max Width (inches) *</label>
+                    <input type="number" class="material-maxwidth" value="200" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Max Height (inches) *</label>
+                    <input type="number" class="material-maxheight" value="150" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+            </div>
+            
+            <div style="margin-top:10px;">
+                <label style="display:block; font-weight:600; margin-bottom:5px;">Description</label>
+                <textarea class="material-description" rows="2" placeholder="e.g., Standard indoor/outdoor banner material" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;"></textarea>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('materialOptionsList').insertAdjacentHTML('beforeend', optionHtml);
+};
+
+window.removeMaterialOption = function(optionId) {
+    document.getElementById(optionId).remove();
+};
+
+function getMaterialOptions() {
+    const options = [];
+    document.querySelectorAll('.material-option').forEach(option => {
+        options.push({
+            name: option.querySelector('.material-name').value,
+            priceModifier: parseFloat(option.querySelector('.material-price').value),
+            maxWidth: parseInt(option.querySelector('.material-maxwidth').value),
+            maxHeight: parseInt(option.querySelector('.material-maxheight').value),
+            description: option.querySelector('.material-description').value
+        });
+    });
+    return options;
+}
+</script>
 </body>
 </html>
