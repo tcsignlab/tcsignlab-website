@@ -467,9 +467,6 @@
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('products')">📦 Products</button>
                 <button class="tab" onclick="switchTab('categories')">📁 Categories</button>
-                <button class="tab" onclick="switchTab('materials')">🎨 Materials</button>
-                <button class="tab" onclick="switchTab('sizes')">📏 Sizes</button>
-                <button class="tab" onclick="switchTab('finishing')">✂️ Finishing</button>
                 <button class="tab" onclick="switchTab('shipping')">🚚 Shipping</button>
                 <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
                 <button class="tab" onclick="switchTab('status')">📊 Status</button>
@@ -477,71 +474,86 @@
             
             <!-- Products Tab -->
             <div id="productsTab" class="tab-content active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalProducts">0</div>
-                        <div class="stat-label">Total Products</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, var(--success), #20873a);">
-                        <div class="stat-number" id="activeProducts">0</div>
-                        <div class="stat-label">Active Products</div>
-                    </div>
-                </div>
+    <div class="tab-header">
+        <h2>Products Management</h2>
+        <button class="btn btn-primary" onclick="showProductForm()">+ Add New Product</button>
+    </div>
+    
+    <!-- Product Form (Hidden by default) -->
+    <div id="productForm" style="display:none; background:#f8f9fa; padding:30px; border-radius:10px; margin-bottom:30px;">
+        <h3 id="formTitle">Add New Product</h3>
+        <form onsubmit="saveProduct(event)">
+            <div class="form-group">
+                <label>Product Name *</label>
+                <input type="text" id="productName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="productCategory" required></select>
+            </div>
+            
+            <div class="form-group">
+                <label>Base Price ($/sq ft) *</label>
+                <input type="number" id="productPrice" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="productDescription" rows="3"></textarea>
+            </div>
+            
+            <!-- FINISHING OPTIONS (Product-Specific) -->
+            <div class="form-section" style="background:white; padding:20px; border-radius:8px; margin:20px 0; border:2px solid #0066cc;">
+                <h3 style="color:#0066cc; margin-bottom:15px;">Finishing Options * (Required)</h3>
+                <p style="color:#666; margin-bottom:15px;">Add at least one finishing option for this product</p>
                 
-                <div class="card">
-                    <h2>📦 Add New Product</h2>
-                    <form id="productForm" onsubmit="saveProduct(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Product Name *</label>
-                                <input type="text" id="productName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Category *</label>
-                                <select id="productCategory" required>
-                                    <option value="">Select Category</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Base Price ($/sq ft) *</label>
-                                <input type="number" id="productPrice" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select id="productActive">
-                                    <option value="true">Active</option>
-                                    <option value="false">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="productDescription" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Product Image</label>
-                            <div class="image-upload" onclick="document.getElementById('productImage').click()">
-                                <input type="file" id="productImage" accept="image/*">
-                                <p>📷 Click to upload image or drag & drop</p>
-                                <small>PNG, JPG up to 5MB</small>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn btn-primary" id="productSubmitBtn">Add Product</button>
-                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
-                        </div>
-                    </form>
-                </div>
+                <div id="finishingOptionsList"></div>
                 
-                <div class="card">
-                    <h2>📦 All Products</h2>
-                    <div id="productsList" class="items-list">
-                        <p style="text-align: center; color: var(--text-light); padding: 40px;">
-                            No products yet. Add your first product above!
-                        </p>
-                    </div>
+                <button type="button" onclick="addFinishingOption()" class="btn btn-secondary" style="margin-top:10px; background:#28a745;">
+                    + Add Finishing Option
+                </button>
+            </div>
+            
+            <!-- MAXIMUM MATERIAL DIMENSIONS -->
+            <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>Max Width (inches) *</label>
+                    <input type="number" id="productMaxWidth" value="200" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Height (inches) *</label>
+                    <input type="number" id="productMaxHeight" value="150" required>
                 </div>
             </div>
+            
+            <div class="form-group">
+                <label>Product Image URL</label>
+                <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg">
+            </div>
+            
+            <div class="form-group">
+                <label>Status</label>
+                <select id="productActive">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="submit" id="productSubmitBtn" class="btn btn-primary" style="flex:1;">
+                    Save Product
+                </button>
+                <button type="button" onclick="cancelProductForm()" class="btn" style="flex:1; background:#6c757d; color:white;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Products List -->
+    <div id="productsList"></div>
+</div>
             
             <!-- Categories Tab -->
             <div id="categoriesTab" class="tab-content">
@@ -571,108 +583,7 @@
                     <div id="categoriesList" class="items-list"></div>
                 </div>
             </div>
-            
-            <!-- Materials Tab -->
-            <div id="materialsTab" class="tab-content">
-                <div class="card">
-                    <h2>🎨 Add Material</h2>
-                    <form id="materialForm" onsubmit="saveMaterial(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Material Name *</label>
-                                <input type="text" id="materialName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price Modifier *</label>
-                                <input type="number" id="materialPrice" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Max Width (inches) *</label>
-                                <input type="number" id="materialMaxWidth" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Max Height (inches) *</label>
-                                <input type="number" id="materialMaxHeight" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="materialDescription" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Material</button>
-                    </form>
-                </div>
-                
-                <div class="card">
-                    <h2>🎨 All Materials</h2>
-                    <div id="materialsList" class="items-list"></div>
-                </div>
-            </div>
-            
-            <!-- Sizes Tab -->
-            <div id="sizesTab" class="tab-content">
-                <div class="card">
-                    <h2>📏 Manage Sizes</h2>
-                    <div class="alert alert-info">
-                        <span>💡</span>
-                        <span>Enter sizes in inches (will auto-convert to feet display). Separate with commas.</span>
-                    </div>
-                    <form id="sizesForm" onsubmit="saveSizes(event)">
-                        <div class="form-group">
-                            <label>Height Options (inches) *</label>
-                            <input type="text" id="sizeHeights" placeholder="12, 24, 36, 48, 60, 72, 96" required>
-                            <small>Example: 12, 24, 36 (will display as 1', 2', 3')</small>
-                        </div>
-                        <div class="form-group">
-                            <label>Width Options (inches) *</label>
-                            <input type="text" id="sizeWidths" placeholder="24, 36, 48, 72, 96, 120, 144" required>
-                            <small>Example: 24, 48, 72 (will display as 2', 4', 6')</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Sizes</button>
-                    </form>
-                    
-                    <div style="margin-top: 30px;">
-                        <h3>Current Size Options:</h3>
-                        <div style="margin-top: 15px;">
-                            <strong>Heights:</strong>
-                            <div id="currentHeights" style="margin: 10px 0;"></div>
-                            <strong>Widths:</strong>
-                            <div id="currentWidths" style="margin: 10px 0;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Finishing Tab -->
-            <div id="finishingTab" class="tab-content">
-                <div class="card">
-                    <h2>✂️ Add Finishing Option</h2>
-                    <form id="finishingForm" onsubmit="saveFinishing(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Finishing Name *</label>
-                                <input type="text" id="finishingName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Price *</label>
-                                <input type="number" id="finishingPrice" step="0.01" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="finishingDescription" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Finishing Option</button>
-                    </form>
-                </div>
-                
-                <div class="card">
-                    <h2>✂️ All Finishing Options</h2>
-                    <div id="finishingList" class="items-list"></div>
-                </div>
-            </div>
-            
-            <!-- Shipping Tab -->
+                        <!-- Shipping Tab -->
             <div id="shippingTab" class="tab-content">
                 <div class="card">
                     <h2>🚚 Add Shipping Option</h2>
@@ -1505,6 +1416,235 @@
                 `;
             }
         }
-    </script>
+    let finishingOptions = [];
+let currentEditId = null;
+
+window.showProductForm = function() {
+    document.getElementById('productForm').style.display = 'block';
+    document.getElementById('formTitle').textContent = 'Add New Product';
+    document.getElementById('productSubmitBtn').textContent = 'Save Product';
+    document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+    currentEditId = null;
+};
+
+window.cancelProductForm = function() {
+    document.getElementById('productForm').style.display = 'none';
+    document.getElementById('finishingOptionsList').innerHTML = '';
+    document.querySelector('form').reset();
+    currentEditId = null;
+};
+
+window.addFinishingOption = function() {
+    const optionId = 'finish_' + Date.now();
+    
+    const optionHtml = `
+        <div class="finishing-option" id="${optionId}" style="border:2px solid #dee2e6; padding:15px; border-radius:8px; margin-bottom:15px; background:white;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h4 style="color:#1D3557;">Finishing Option</h4>
+                <button type="button" onclick="removeFinishingOption('${optionId}')" style="background:#dc3545; color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer;">
+                    Remove
+                </button>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:10px;">
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Option Name *</label>
+                    <input type="text" class="finish-name" placeholder="e.g., Hems & Grommets" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:5px;">Price ($) *</label>
+                    <input type="number" class="finish-price" step="0.01" value="0" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+            </div>
+            
+            <div>
+                <label style="display:block; font-weight:600; margin-bottom:5px;">Description</label>
+                <textarea class="finish-description" rows="2" placeholder="e.g., Hemmed edges with metal grommets every 2 feet" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;"></textarea>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('finishingOptionsList').insertAdjacentHTML('beforeend', optionHtml);
+};
+
+window.removeFinishingOption = function(optionId) {
+    document.getElementById(optionId).remove();
+};
+
+function getFinishingOptions() {
+    const options = [];
+    document.querySelectorAll('.finishing-option').forEach(option => {
+        const name = option.querySelector('.finish-name').value;
+        const price = parseFloat(option.querySelector('.finish-price').value);
+        const description = option.querySelector('.finish-description').value;
+        
+        if (name) {
+            options.push({ name, price, description });
+        }
+    });
+    return options;
+}
+
+window.saveProduct = async function(e) {
+    e.preventDefault();
+    
+    // VALIDATION
+    const name = document.getElementById('productName').value;
+    const category = document.getElementById('productCategory').value;
+    const price = document.getElementById('productPrice').value;
+    const finishingOpts = getFinishingOptions();
+    const maxWidth = document.getElementById('productMaxWidth').value;
+    const maxHeight = document.getElementById('productMaxHeight').value;
+    
+    if (!name) {
+        alert('⚠️ Product name is required!');
+        return;
+    }
+    
+    if (!category) {
+        alert('⚠️ Please select a category!');
+        return;
+    }
+    
+    if (!price || price <= 0) {
+        alert('⚠️ Please enter a valid base price!');
+        return;
+    }
+    
+    if (finishingOpts.length === 0) {
+        alert('⚠️ Please add at least one finishing option!');
+        return;
+    }
+    
+    if (!maxWidth || maxWidth <= 0 || !maxHeight || maxHeight <= 0) {
+        alert('⚠️ Please enter valid maximum dimensions!');
+        return;
+    }
+    
+    updateSyncStatus('syncing', 'Syncing...');
+    
+    const product = {
+        name: name,
+        category: category,
+        basePrice: parseFloat(price),
+        description: document.getElementById('productDescription').value,
+        finishingOptions: finishingOpts,
+        maxWidth: parseInt(maxWidth),
+        maxHeight: parseInt(maxHeight),
+        imageUrl: document.getElementById('productImageUrl').value || '',
+        active: document.getElementById('productActive').value === 'true',
+        sortOrder: 0
+    };
+    
+    try {
+        if (currentEditId) {
+            await update(ref(database, `products/${currentEditId}`), product);
+            showNotification('✓ Product updated!');
+        } else {
+            await push(ref(database, 'products'), product);
+            showNotification('✓ Product added successfully!');
+        }
+        
+        cancelProductForm();
+        loadProducts();
+        updateSyncStatus('synced', 'Synced');
+        
+    } catch (error) {
+        console.error(error);
+        showNotification('❌ Error saving product', 'error');
+        updateSyncStatus('error', 'Error');
+    }
+};
+
+// UPDATE editProduct function
+window.editProduct = async function(productId) {
+    currentEditId = productId;
+    
+    const productRef = ref(database, `products/${productId}`);
+    const snapshot = await get(productRef);
+    const product = snapshot.val();
+    
+    if (!product) return;
+    
+    // Show form
+    document.getElementById('productForm').style.display = 'block';
+    document.getElementById('formTitle').textContent = 'Edit Product';
+    document.getElementById('productSubmitBtn').textContent = 'Update Product';
+    
+    // Fill basic fields
+    document.getElementById('productName').value = product.name;
+    document.getElementById('productCategory').value = product.category;
+    document.getElementById('productPrice').value = product.basePrice;
+    document.getElementById('productDescription').value = product.description || '';
+    document.getElementById('productMaxWidth').value = product.maxWidth || 200;
+    document.getElementById('productMaxHeight').value = product.maxHeight || 150;
+    document.getElementById('productImageUrl').value = product.imageUrl || '';
+    document.getElementById('productActive').value = product.active ? 'true' : 'false';
+    
+    // Load finishing options
+    document.getElementById('finishingOptionsList').innerHTML = '';
+    if (product.finishingOptions && product.finishingOptions.length > 0) {
+        product.finishingOptions.forEach(opt => {
+            addFinishingOption();
+            const lastOption = document.querySelector('.finishing-option:last-child');
+            lastOption.querySelector('.finish-name').value = opt.name;
+            lastOption.querySelector('.finish-price').value = opt.price;
+            lastOption.querySelector('.finish-description').value = opt.description || '';
+        });
+    }
+    
+    // Scroll to form
+    document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+};
+
+// UPDATE displayProducts function
+function displayProducts(products) {
+    const container = document.getElementById('productsList');
+    
+    if (products.length === 0) {
+        container.innerHTML = '<p>No products yet. Click "Add New Product" to create one!</p>';
+        return;
+    }
+    
+    container.innerHTML = products.map(product => `
+        <div class="product-item" style="border:2px solid #dee2e6; padding:20px; border-radius:10px; margin-bottom:15px; background:white;">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div style="flex:1;">
+                    <h3 style="color:#1D3557; margin-bottom:10px;">${product.name}</h3>
+                    <p style="color:#666; margin-bottom:10px;">${product.description || 'No description'}</p>
+                    
+                    <div style="display:flex; gap:20px; margin-bottom:10px; flex-wrap:wrap;">
+                        <span><strong>Base Price:</strong> $${product.basePrice}/sq ft</span>
+                        <span><strong>Category:</strong> ${categories[product.category]?.name || 'N/A'}</span>
+                        <span><strong>Max Dimensions:</strong> ${product.maxWidth || 'N/A'}"W x ${product.maxHeight || 'N/A'}"H</span>
+                        <span><strong>Status:</strong> ${product.active ? '✓ Active' : '✗ Inactive'}</span>
+                    </div>
+                    
+                    ${product.finishingOptions && product.finishingOptions.length > 0 ? `
+                        <div style="background:#f8f9fa; padding:10px; border-radius:6px; margin-top:10px;">
+                            <strong>Finishing Options (${product.finishingOptions.length}):</strong>
+                            <ul style="margin:5px 0 0 20px;">
+                                ${product.finishingOptions.map(opt => `
+                                    <li>${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : ''} - ${opt.description || 'No description'}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : '<p style="color:#dc3545; margin-top:10px;">⚠️ No finishing options</p>'}
+                </div>
+                
+                <div style="display:flex; gap:10px;">
+                    <button onclick="editProduct('${product.id}')" class="btn btn-sm" style="padding:8px 16px; background:#0066cc; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        Edit
+                    </button>
+                    <button onclick="deleteProduct('${product.id}')" class="btn btn-sm" style="padding:8px 16px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+</script>
 </body>
 </html>
