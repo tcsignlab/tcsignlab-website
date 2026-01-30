@@ -6,11 +6,7 @@
     <title>Design Your Custom Banner - TC SignLab</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Roboto', Arial, sans-serif;
@@ -18,10 +14,21 @@
             color: #333;
         }
         
+        /* Header */
+        .top-bar {
+            background: #1D3557;
+            padding: 10px 0;
+            text-align: center;
+        }
+        
+        .top-bar img {
+            height: 40px;
+        }
+        
         .header {
-            background: #fff;
+            background: white;
             border-bottom: 3px solid #0066cc;
-            padding: 20px 0;
+            padding: 15px 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
@@ -29,19 +36,44 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
             color: #0066cc;
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
         }
         
         .header .phone {
             color: #e63946;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .breadcrumbs {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            color: #666;
+        }
+        
+        .breadcrumbs a {
+            color: #0066cc;
+            text-decoration: none;
         }
         
         .container {
@@ -53,9 +85,9 @@
             gap: 20px;
         }
         
-        /* LEFT SIDEBAR - TOOLS */
+        /* Tools Sidebar */
         .tools-sidebar {
-            background: #fff;
+            background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
@@ -68,35 +100,21 @@
             padding: 20px 10px;
             border: none;
             border-bottom: 1px solid #e0e0e0;
-            background: #fff;
+            background: white;
             cursor: pointer;
-            transition: background 0.2s;
             width: 100%;
+            transition: background 0.2s;
         }
         
-        .tool-btn:hover {
-            background: #f0f7ff;
-        }
+        .tool-btn:hover { background: #f0f7ff; }
+        .tool-btn.active { background: #0066cc; color: white; }
         
-        .tool-btn.active {
-            background: #0066cc;
-            color: white;
-        }
+        .tool-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .tool-label { font-size: 0.85rem; font-weight: 600; text-align: center; }
         
-        .tool-icon {
-            font-size: 2.5rem;
-            margin-bottom: 8px;
-        }
-        
-        .tool-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-        }
-        
-        /* CENTER - CANVAS */
+        /* Canvas Area */
         .canvas-area {
-            background: #fff;
+            background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 30px;
@@ -122,17 +140,15 @@
             margin-right: 10px;
         }
         
-        .canvas-info select,
-        .canvas-info input {
+        .canvas-info select, .canvas-info input {
             padding: 8px 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 1rem;
         }
         
         .canvas-wrapper {
             border: 3px solid #000;
-            background: #fff;
+            background: white;
             position: relative;
             margin: 0 auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -153,23 +169,11 @@
             font-weight: 600;
         }
         
-        .scale-top {
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        
-        .scale-right {
-            right: -80px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
         .undo-btn {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #fff;
+            background: white;
             border: 2px solid #ccc;
             border-radius: 50%;
             width: 45px;
@@ -177,29 +181,18 @@
             font-size: 1.2rem;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transition: all 0.2s;
         }
         
-        .undo-btn:hover {
-            background: #f0f0f0;
-            transform: scale(1.1);
-        }
-        
-        /* RIGHT SIDEBAR - SETTINGS */
+        /* Settings Sidebar */
         .settings-sidebar {
-            background: #fff;
+            background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 20px;
         }
         
-        .settings-panel {
-            display: none;
-        }
-        
-        .settings-panel.active {
-            display: block;
-        }
+        .settings-panel { display: none; }
+        .settings-panel.active { display: block; }
         
         .panel-title {
             background: #0066cc;
@@ -207,7 +200,6 @@
             padding: 12px;
             margin: -20px -20px 20px -20px;
             font-weight: 600;
-            font-size: 1.1rem;
         }
         
         .control-group {
@@ -221,14 +213,11 @@
             color: #555;
         }
         
-        .control-group input,
-        .control-group select,
-        .control-group button {
+        .control-group input, .control-group select, .control-group button {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 1rem;
         }
         
         .control-group button {
@@ -236,24 +225,6 @@
             color: white;
             cursor: pointer;
             font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        .control-group button:hover {
-            background: #222;
-        }
-        
-        .color-picker-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .color-picker-wrapper input[type="color"] {
-            width: 60px;
-            height: 40px;
-            border: none;
-            cursor: pointer;
         }
         
         .color-grid {
@@ -269,7 +240,6 @@
             border-radius: 4px;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: all 0.2s;
         }
         
         .color-swatch:hover {
@@ -277,7 +247,7 @@
             border-color: #0066cc;
         }
         
-        /* PRICE SUMMARY */
+        /* Price Summary */
         .price-summary {
             background: #f8f8f8;
             padding: 20px;
@@ -289,7 +259,6 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-size: 0.95rem;
         }
         
         .price-total {
@@ -301,10 +270,6 @@
             margin-top: 15px;
         }
         
-        .action-buttons {
-            margin-top: 20px;
-        }
-        
         .btn {
             width: 100%;
             padding: 15px;
@@ -314,66 +279,82 @@
             font-weight: 700;
             cursor: pointer;
             margin-bottom: 10px;
-            transition: all 0.2s;
         }
         
-        .btn-primary {
-            background: #0066cc;
-            color: white;
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
         
-        .btn-primary:hover {
-            background: #0052a3;
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
         }
         
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
+        .modal h2 { margin-bottom: 20px; }
         
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        /* Font Loader */
-        .font-item {
-            padding: 8px;
+        .finishing-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
             cursor: pointer;
-            border-radius: 4px;
-            margin-bottom: 5px;
         }
         
-        .font-item:hover {
-            background: #f0f7ff;
-        }
-        
-        .font-item.selected {
-            background: #0066cc;
-            color: white;
-        }
+        .finishing-option:hover { border-color: #0066cc; }
+        .finishing-option.selected { border-color: #0066cc; background: #f0f7ff; }
         
         @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            
-            .tools-sidebar,
-            .settings-sidebar {
-                max-width: 100%;
-            }
+            .container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <div class="top-bar">
+        <img src="./tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+    </div>
+    
     <div class="header">
         <div class="header-content">
-            <h1>Design Your Custom Banner</h1>
-            <p>We're ready to help! Call <span class="phone">866-419-7446</span></p>
+            <div>
+                <h1>Design Your Custom Banner</h1>
+                <p>Call us: <span class="phone">866-419-7446</span></p>
+            </div>
+            <div class="nav-links">
+                <a href="./index.html">Home</a>
+                <a href="./products.html">Products</a>
+                <a href="./checkout.html">Cart (<span id="cartCount">0</span>)</a>
+                <a href="./login.html" id="loginLink">Login</a>
+            </div>
         </div>
     </div>
     
+    <div class="breadcrumbs">
+        <a href="./index.html">Home</a> / <a href="./products.html">Products</a> / <span>Design Tool</span>
+    </div>
+    
     <div class="container">
-        <!-- LEFT SIDEBAR - TOOLS -->
         <aside class="tools-sidebar">
             <button class="tool-btn active" onclick="selectTool('text')" data-tool="text">
                 <div class="tool-icon">T</div>
@@ -389,7 +370,6 @@
             </button>
         </aside>
         
-        <!-- CENTER - CANVAS -->
         <main class="canvas-area">
             <div class="canvas-header">
                 <div class="canvas-info">
@@ -397,13 +377,10 @@
                         <label>Quantity:</label>
                         <select id="quantity" onchange="updatePrice()">
                             <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
                             <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
-                            <option value="100">100</option>
                         </select>
                     </div>
                     <div>
@@ -421,131 +398,89 @@
             <div style="position: relative; display: inline-block;">
                 <div class="canvas-wrapper" id="canvasWrapper">
                     <canvas id="designCanvas" width="800" height="400"></canvas>
-                    <div class="canvas-scale scale-top" id="scaleWidth">4ft (48")</div>
-                    <div class="canvas-scale scale-right" id="scaleHeight">2ft (24")</div>
+                    <div class="canvas-scale" style="top:-30px; left:50%; transform:translateX(-50%);" id="scaleWidth">4ft</div>
+                    <div class="canvas-scale" style="right:-70px; top:50%; transform:translateY(-50%);" id="scaleHeight">2ft</div>
                 </div>
                 <button class="undo-btn" onclick="undo()" title="Undo">↶</button>
             </div>
             
             <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
-                <button class="btn btn-success" onclick="saveDesign()">💾 Save for Later</button>
-                <button class="btn btn-primary" onclick="acceptDesign()">🛒 Accept Design</button>
+                <button class="btn btn-primary" onclick="addToCart()">🛒 Add to Cart</button>
+                <button class="btn btn-warning" onclick="requestQuote()">📧 Request Quote</button>
             </div>
         </main>
         
-        <!-- RIGHT SIDEBAR - SETTINGS -->
         <aside class="settings-sidebar">
-            <!-- TEXT SETTINGS -->
             <div id="textPanel" class="settings-panel active">
-                <div class="panel-title">Settings</div>
-                
+                <div class="panel-title">Text Settings</div>
                 <div class="control-group">
                     <label>Text</label>
                     <input type="text" id="textInput" placeholder="Enter your text">
                 </div>
-                
                 <div class="control-group">
                     <label>Font</label>
-                    <select id="fontSelect" onchange="updateTextFont()">
-                        <option value="Roboto">Roboto</option>
-                        <option value="Open Sans">Open Sans</option>
-                        <option value="Montserrat">Montserrat</option>
-                        <option value="Lato">Lato</option>
-                        <option value="Oswald">Oswald</option>
-                        <option value="Raleway">Raleway</option>
-                        <option value="Playfair Display">Playfair Display</option>
-                        <option value="Bebas Neue">Bebas Neue</option>
-                        <option value="Pacifico">Pacifico</option>
-                        <option value="Dancing Script">Dancing Script</option>
+                    <select id="fontSelect">
+                        <option>Roboto</option>
+                        <option>Open Sans</option>
+                        <option>Montserrat</option>
+                        <option>Lato</option>
+                        <option>Oswald</option>
                     </select>
                 </div>
-                
                 <div class="control-group">
-                    <label>Size</label>
-                    <input type="range" id="fontSize" min="10" max="200" value="48" oninput="updateTextSize()">
-                    <span id="fontSizeValue">48px</span>
+                    <label>Size: <span id="fontSizeValue">48px</span></label>
+                    <input type="range" id="fontSize" min="10" max="200" value="48" oninput="document.getElementById('fontSizeValue').textContent = this.value + 'px'">
                 </div>
-                
                 <div class="control-group">
                     <label>Color</label>
-                    <div class="color-picker-wrapper">
-                        <input type="color" id="textColor" value="#000000" onchange="updateTextColor()">
-                        <span id="textColorHex">#000000</span>
-                    </div>
+                    <input type="color" id="textColor" value="#000000">
                     <div class="color-grid">
-                        <div class="color-swatch" style="background:#000000" onclick="setTextColor('#000000')"></div>
-                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="setTextColor('#FFFFFF')"></div>
-                        <div class="color-swatch" style="background:#E63946" onclick="setTextColor('#E63946')"></div>
-                        <div class="color-swatch" style="background:#0066CC" onclick="setTextColor('#0066CC')"></div>
-                        <div class="color-swatch" style="background:#28A745" onclick="setTextColor('#28A745')"></div>
-                        <div class="color-swatch" style="background:#FFC107" onclick="setTextColor('#FFC107')"></div>
+                        <div class="color-swatch" style="background:#000000" onclick="document.getElementById('textColor').value='#000000'"></div>
+                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="document.getElementById('textColor').value='#FFFFFF'"></div>
+                        <div class="color-swatch" style="background:#E63946" onclick="document.getElementById('textColor').value='#E63946'"></div>
+                        <div class="color-swatch" style="background:#0066CC" onclick="document.getElementById('textColor').value='#0066CC'"></div>
+                        <div class="color-swatch" style="background:#28A745" onclick="document.getElementById('textColor').value='#28A745'"></div>
+                        <div class="color-swatch" style="background:#FFC107" onclick="document.getElementById('textColor').value='#FFC107'"></div>
                     </div>
                 </div>
-                
-                <button class="control-group" onclick="addText()">Add Text to Canvas</button>
+                <button class="control-group" onclick="addText()">Add Text</button>
             </div>
             
-            <!-- IMAGE SETTINGS -->
             <div id="imagePanel" class="settings-panel">
-                <div class="panel-title">Background</div>
-                
+                <div class="panel-title">Image Upload</div>
                 <div class="control-group">
                     <button onclick="document.getElementById('imageUpload').click()">📤 Upload File</button>
-                    <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage()">
+                    <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
                 </div>
-                
                 <div class="control-group">
-                    <button onclick="matchCanvasSize()">📐 Match Canvas Size</button>
+                    <button onclick="matchCanvas()">📐 Match Canvas</button>
                 </div>
-                
                 <div class="control-group">
                     <button onclick="startOver()">🔄 Start Over</button>
                 </div>
-                
-                <div id="uploadProgress" style="display:none; margin-top:15px;">
-                    <div style="background:#e0e0e0; height:20px; border-radius:10px; overflow:hidden;">
-                        <div id="progressBar" style="background:#0066cc; height:100%; width:0%; transition:width 0.3s;"></div>
-                    </div>
-                    <p id="uploadStatus" style="margin-top:10px; text-align:center;"></p>
-                </div>
+                <div id="uploadStatus" style="margin-top:15px; text-align:center; color:#666;"></div>
             </div>
             
-            <!-- BACKGROUND SETTINGS -->
             <div id="backgroundPanel" class="settings-panel">
                 <div class="panel-title">Background</div>
-                
                 <div class="control-group">
                     <label>Color</label>
-                    <div class="color-picker-wrapper">
-                        <input type="color" id="bgColor" value="#FFFFFF" onchange="updateBgColor()">
-                        <span id="bgColorHex">#FFFFFF</span>
-                    </div>
+                    <input type="color" id="bgColor" value="#FFFFFF" onchange="redraw()">
                     <div class="color-grid">
-                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="setBgColor('#FFFFFF')"></div>
-                        <div class="color-swatch" style="background:#000000" onclick="setBgColor('#000000')"></div>
-                        <div class="color-swatch" style="background:#E63946" onclick="setBgColor('#E63946')"></div>
-                        <div class="color-swatch" style="background:#0066CC" onclick="setBgColor('#0066CC')"></div>
-                        <div class="color-swatch" style="background:#28A745" onclick="setBgColor('#28A745')"></div>
-                        <div class="color-swatch" style="background:#FFC107" onclick="setBgColor('#FFC107')"></div>
+                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="document.getElementById('bgColor').value='#FFFFFF'; redraw()"></div>
+                        <div class="color-swatch" style="background:#000000" onclick="document.getElementById('bgColor').value='#000000'; redraw()"></div>
+                        <div class="color-swatch" style="background:#E63946" onclick="document.getElementById('bgColor').value='#E63946'; redraw()"></div>
+                        <div class="color-swatch" style="background:#0066CC" onclick="document.getElementById('bgColor').value='#0066CC'; redraw()"></div>
+                        <div class="color-swatch" style="background:#28A745" onclick="document.getElementById('bgColor').value='#28A745'; redraw()"></div>
+                        <div class="color-swatch" style="background:#FFC107" onclick="document.getElementById('bgColor').value='#FFC107'; redraw()"></div>
                     </div>
-                </div>
-                
-                <div class="control-group">
-                    <label>Opacity</label>
-                    <input type="range" id="bgOpacity" min="0" max="100" value="100" oninput="updateBgOpacity()">
-                    <span id="opacityValue">100</span>
                 </div>
             </div>
             
-            <!-- PRICE SUMMARY -->
             <div class="price-summary">
                 <div class="price-row">
                     <span>Base Price:</span>
                     <span id="basePrice">$27.04</span>
-                </div>
-                <div class="price-row">
-                    <span>Options:</span>
-                    <span id="optionsPrice">$0.00</span>
                 </div>
                 <div class="price-row">
                     <span>Quantity:</span>
@@ -559,29 +494,76 @@
         </aside>
     </div>
     
+    <!-- Finishing Options Modal -->
+    <div id="finishingModal" class="modal">
+        <div class="modal-content">
+            <h2>Select Finishing Options</h2>
+            <p style="margin-bottom:20px; color:#666;">Choose how you want your banner finished:</p>
+            <div id="finishingOptionsList"></div>
+            <button class="btn btn-primary" onclick="confirmFinishing()" style="margin-top:20px;">Continue to Cart</button>
+            <button class="btn" onclick="closeModal()" style="background:#6c757d; color:white;">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Quote Request Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <h2>Request a Quote</h2>
+            <form id="quoteForm" onsubmit="submitQuote(event)">
+                <div class="control-group">
+                    <label>Name *</label>
+                    <input type="text" id="quoteName" required>
+                </div>
+                <div class="control-group">
+                    <label>Email *</label>
+                    <input type="email" id="quoteEmail" required>
+                </div>
+                <div class="control-group">
+                    <label>Phone</label>
+                    <input type="tel" id="quotePhone">
+                </div>
+                <div class="control-group">
+                    <label>Additional Notes</label>
+                    <textarea id="quoteNotes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Quote Request</button>
+                <button type="button" class="btn" onclick="closeModal()" style="background:#6c757d; color:white;">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
     <script type="module">
-        const IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY'; // Get from api.imgbb.com
+        import { auth, onAuthStateChanged } from './firebase-auth.js';
         
         let canvas, ctx;
         let canvasObjects = [];
-        let selectedObject = null;
-        let isDragging = false;
-        let dragStart = {x: 0, y: 0};
         let history = [];
         let currentTool = 'text';
+        let selectedFinishing = null;
         
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
             canvas = document.getElementById('designCanvas');
             ctx = canvas.getContext('2d');
             loadGoogleFonts();
+            updateCartCount();
+            checkAuth();
             redraw();
         });
         
+        function checkAuth() {
+            onAuthStateChanged(auth, (user) => {
+                const loginLink = document.getElementById('loginLink');
+                if (user) {
+                    loginLink.textContent = user.email.split('@')[0];
+                    loginLink.href = './dashboard.html';
+                }
+            });
+        }
+        
         function loadGoogleFonts() {
-            const fonts = ['Roboto', 'Open+Sans', 'Montserrat', 'Lato', 'Oswald', 'Raleway', 'Playfair+Display', 'Bebas+Neue', 'Pacifico', 'Dancing+Script'];
             const link = document.createElement('link');
-            link.href = `https://fonts.googleapis.com/css2?${fonts.map(f => `family=${f}:wght@400;700`).join('&')}&display=swap`;
+            link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&family=Lato:wght@400;700&family=Oswald:wght@400;700&display=swap';
             link.rel = 'stylesheet';
             document.head.appendChild(link);
         }
@@ -590,7 +572,6 @@
             currentTool = tool;
             document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
-            
             document.querySelectorAll('.settings-panel').forEach(panel => panel.classList.remove('active'));
             document.getElementById(tool + 'Panel').classList.add('active');
         };
@@ -602,71 +583,95 @@
                 return;
             }
             
-            const obj = {
+            canvasObjects.push({
                 type: 'text',
                 content: text,
                 x: canvas.width / 2,
                 y: canvas.height / 2,
                 fontSize: parseInt(document.getElementById('fontSize').value),
                 font: document.getElementById('fontSelect').value,
-                color: document.getElementById('textColor').value,
-                width: 0,
-                height: 0
-            };
+                color: document.getElementById('textColor').value
+            });
             
-            canvasObjects.push(obj);
             saveHistory();
             redraw();
         };
         
-        window.uploadImage = async function() {
-            const file = document.getElementById('imageUpload').files[0];
+        window.handleImageUpload = function(event) {
+            const file = event.target.files[0];
             if (!file) return;
             
-            document.getElementById('uploadProgress').style.display = 'block';
             document.getElementById('uploadStatus').textContent = 'Uploading...';
-            document.getElementById('progressBar').style.width = '50%';
             
-            const formData = new FormData();
-            formData.append('image', file);
-            
-            try {
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const obj = {
-                            type: 'image',
-                            img: img,
-                            url: data.data.url,
-                            x: 0,
-                            y: 0,
-                            width: img.width,
-                            height: img.height,
-                            scale: 1
-                        };
-                        canvasObjects.push(obj);
-                        saveHistory();
-                        redraw();
-                        
-                        document.getElementById('progressBar').style.width = '100%';
-                        document.getElementById('uploadStatus').textContent = '✓ Upload Complete!';
-                        setTimeout(() => {
-                            document.getElementById('uploadProgress').style.display = 'none';
-                        }, 2000);
-                    };
-                    img.src = data.data.url;
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                document.getElementById('uploadStatus').textContent = '✗ Upload Failed';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    canvasObjects.push({
+                        type: 'image',
+                        img: img,
+                        x: 0,
+                        y: 0,
+                        width: img.width,
+                        height: img.height,
+                        scale: Math.min(canvas.width / img.width, canvas.height / img.height)
+                    });
+                    saveHistory();
+                    redraw();
+                    document.getElementById('uploadStatus').textContent = '✓ Image uploaded!';
+                    setTimeout(() => document.getElementById('uploadStatus').textContent = '', 3000);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        window.matchCanvas = function() {
+            if (canvasObjects.length === 0) return;
+            const lastObj = canvasObjects[canvasObjects.length - 1];
+            if (lastObj.type === 'image') {
+                lastObj.scale = Math.max(canvas.width / lastObj.img.width, canvas.height / lastObj.img.height);
+                lastObj.x = (canvas.width - lastObj.img.width * lastObj.scale) / 2;
+                lastObj.y = (canvas.height - lastObj.img.height * lastObj.scale) / 2;
+                redraw();
             }
+        };
+        
+        window.startOver = function() {
+            if (confirm('Clear all design elements?')) {
+                canvasObjects = [];
+                history = [];
+                redraw();
+            }
+        };
+        
+        window.undo = function() {
+            if (history.length > 0) {
+                canvasObjects = JSON.parse(history.pop());
+                redraw();
+            }
+        };
+        
+        function saveHistory() {
+            history.push(JSON.stringify(canvasObjects));
+            if (history.length > 20) history.shift();
+        }
+        
+        window.redraw = function() {
+            ctx.fillStyle = document.getElementById('bgColor').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            canvasObjects.forEach(obj => {
+                if (obj.type === 'text') {
+                    ctx.font = `${obj.fontSize}px ${obj.font}`;
+                    ctx.fillStyle = obj.color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(obj.content, obj.x, obj.y);
+                } else if (obj.type === 'image') {
+                    ctx.drawImage(obj.img, obj.x, obj.y, obj.img.width * obj.scale, obj.img.height * obj.scale);
+                }
+            });
         };
         
         window.updateCanvasSize = function() {
@@ -692,82 +697,6 @@
             updatePrice();
         };
         
-        window.setBgColor = function(color) {
-            document.getElementById('bgColor').value = color;
-            document.getElementById('bgColorHex').textContent = color;
-            updateBgColor();
-        };
-        
-        window.updateBgColor = function() {
-            const color = document.getElementById('bgColor').value;
-            document.getElementById('bgColorHex').textContent = color;
-            redraw();
-        };
-        
-        window.setTextColor = function(color) {
-            document.getElementById('textColor').value = color;
-            document.getElementById('textColorHex').textContent = color;
-        };
-        
-        window.updateTextSize = function() {
-            const size = document.getElementById('fontSize').value;
-            document.getElementById('fontSizeValue').textContent = size + 'px';
-        };
-        
-        window.matchCanvasSize = function() {
-            if (canvasObjects.length === 0) return;
-            const lastObj = canvasObjects[canvasObjects.length - 1];
-            if (lastObj.type === 'image') {
-                const scaleX = canvas.width / lastObj.img.width;
-                const scaleY = canvas.height / lastObj.img.height;
-                lastObj.scale = Math.max(scaleX, scaleY);
-                lastObj.x = 0;
-                lastObj.y = 0;
-                lastObj.width = lastObj.img.width * lastObj.scale;
-                lastObj.height = lastObj.img.height * lastObj.scale;
-                redraw();
-            }
-        };
-        
-        window.startOver = function() {
-            if (confirm('Clear all design elements and start over?')) {
-                canvasObjects = [];
-                history = [];
-                redraw();
-            }
-        };
-        
-        window.undo = function() {
-            if (history.length > 0) {
-                canvasObjects = JSON.parse(history.pop());
-                redraw();
-            }
-        };
-        
-        function saveHistory() {
-            history.push(JSON.stringify(canvasObjects));
-            if (history.length > 20) history.shift();
-        }
-        
-        function redraw() {
-            ctx.fillStyle = document.getElementById('bgColor').value;
-            ctx.globalAlpha = parseInt(document.getElementById('bgOpacity').value) / 100;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalAlpha = 1;
-            
-            canvasObjects.forEach(obj => {
-                if (obj.type === 'text') {
-                    ctx.font = `${obj.fontSize}px ${obj.font}`;
-                    ctx.fillStyle = obj.color;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(obj.content, obj.x, obj.y);
-                } else if (obj.type === 'image') {
-                    ctx.drawImage(obj.img, obj.x, obj.y, obj.width * obj.scale, obj.height * obj.scale);
-                }
-            });
-        }
-        
         window.updatePrice = function() {
             const qty = parseInt(document.getElementById('quantity').value);
             const heightFt = parseFloat(document.getElementById('customHeight').value);
@@ -783,41 +712,118 @@
             document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
         };
         
-        window.saveDesign = function() {
-            const design = {
-                canvasData: canvas.toDataURL(),
-                objects: canvasObjects,
-                size: {
-                    height: document.getElementById('customHeight').value,
-                    width: document.getElementById('customWidth').value
-                }
-            };
-            localStorage.setItem('savedDesign', JSON.stringify(design));
-            alert('✓ Design saved!');
+        window.addToCart = function() {
+            if (canvasObjects.length === 0) {
+                alert('Please add some design elements first!');
+                return;
+            }
+            
+            // Show finishing options modal
+            document.getElementById('finishingModal').classList.add('show');
+            loadFinishingOptions();
         };
         
-        window.acceptDesign = function() {
+        function loadFinishingOptions() {
+            const options = [
+                {id: 'grommets', name: 'Hems & Grommets', price: 15, desc: 'Hemmed edges with metal grommets every 2 feet'},
+                {id: 'pockets', name: 'Pole Pockets', price: 20, desc: 'Top and bottom pole pockets'},
+                {id: 'rope', name: 'Rope & Grommets', price: 18, desc: 'Includes nylon rope'},
+                {id: 'slits', name: 'Wind Slits', price: 10, desc: 'Reinforced wind slits'},
+                {id: 'none', name: 'No Finishing', price: 0, desc: 'Raw edges'}
+            ];
+            
+            const container = document.getElementById('finishingOptionsList');
+            container.innerHTML = options.map(opt => `
+                <div class="finishing-option" onclick="selectFinishing('${opt.id}', ${opt.price})">
+                    <strong>${opt.name}</strong> ${opt.price > 0 ? `(+$${opt.price})` : ''}
+                    <div style="font-size:0.9rem; color:#666; margin-top:5px;">${opt.desc}</div>
+                </div>
+            `).join('');
+        }
+        
+        window.selectFinishing = function(id, price) {
+            selectedFinishing = {id, price};
+            document.querySelectorAll('.finishing-option').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.finishing-option').classList.add('selected');
+        };
+        
+        window.confirmFinishing = function() {
+            if (!selectedFinishing) {
+                alert('Please select a finishing option');
+                return;
+            }
+            
             const design = {
                 preview: canvas.toDataURL(),
                 price: document.getElementById('totalPrice').textContent,
                 size: `${document.getElementById('customHeight').value}' x ${document.getElementById('customWidth').value}'`,
-                quantity: document.getElementById('quantity').value
+                quantity: document.getElementById('quantity').value,
+                finishing: selectedFinishing,
+                timestamp: Date.now()
             };
             
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             cart.push({
                 name: 'Custom Banner Design',
-                total: document.getElementById('totalPrice').textContent,
+                total: design.price,
                 size: design.size,
                 quantity: design.quantity,
+                finishing: selectedFinishing.id,
                 preview: design.preview
             });
             localStorage.setItem('cart', JSON.stringify(cart));
+            
+            closeModal();
+            updateCartCount();
             
             if (confirm('✓ Added to cart! Go to checkout?')) {
                 window.location.href = './checkout.html';
             }
         };
+        
+        window.requestQuote = function() {
+            document.getElementById('quoteModal').classList.add('show');
+        };
+        
+        window.submitQuote = async function(e) {
+            e.preventDefault();
+            
+            const quoteData = {
+                _subject: 'TC SignLab - Custom Banner Quote Request',
+                _template: 'box',
+                Name: document.getElementById('quoteName').value,
+                Email: document.getElementById('quoteEmail').value,
+                Phone: document.getElementById('quotePhone').value || 'Not provided',
+                Size: `${document.getElementById('customHeight').value}' x ${document.getElementById('customWidth').value}'`,
+                Quantity: document.getElementById('quantity').value,
+                'Unit Price': document.getElementById('unitPrice').textContent,
+                Total: document.getElementById('totalPrice').textContent,
+                Notes: document.getElementById('quoteNotes').value || 'None'
+            };
+            
+            try {
+                await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(quoteData)
+                });
+                
+                alert('✓ Quote request sent! We\'ll respond within 24 hours.');
+                closeModal();
+                document.getElementById('quoteForm').reset();
+            } catch (error) {
+                alert('Error sending quote. Please try again.');
+            }
+        };
+        
+        window.closeModal = function() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+        };
+        
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            document.getElementById('cartCount').textContent = cart.length;
+        }
         
         updateCanvasSize();
         updatePrice();
