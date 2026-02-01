@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Your Custom Banner - TC SignLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        /* Header */
+        .top-bar {
+            background: #1D3557;
+            padding: 10px 0;
+            text-align: center;
+        }
+        
+        .top-bar img {
+            height: 40px;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 3px solid #0066cc;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #0066cc;
+            font-size: 1.8rem;
+        }
+        
+        .header .phone {
+            color: #e63946;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .breadcrumbs {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            color: #666;
+        }
+        
+        .breadcrumbs a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 200px 1fr 280px;
+            gap: 20px;
+        }
+        
+        /* Tools Sidebar */
+        .tools-sidebar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .tool-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        
+        .tool-btn:hover { background: #f0f7ff; }
+        .tool-btn.active { background: #0066cc; color: white; }
+        
+        .tool-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .tool-label { font-size: 0.85rem; font-weight: 600; text-align: center; }
+        
+        /* Canvas Area */
+        .canvas-area {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .canvas-info {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .canvas-info label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .canvas-info select, .canvas-info input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .canvas-wrapper {
+            border: 3px solid #000;
+            background: white;
+            position: relative;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        #designCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .canvas-scale {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .undo-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Settings Sidebar */
+        .settings-sidebar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .settings-panel { display: none; }
+        .settings-panel.active { display: block; }
+        
+        .panel-title {
+            background: #0066cc;
+            color: white;
+            padding: 12px;
+            margin: -20px -20px 20px -20px;
+            font-weight: 600;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .control-group input, .control-group select, .control-group button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .control-group button {
+            background: #444;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .color-swatch {
+            width: 100%;
+            padding-top: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .color-swatch:hover {
+            transform: scale(1.1);
+            border-color: #0066cc;
+        }
+        
+        /* Price Summary */
+        .price-summary {
+            background: #f8f8f8;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .price-total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e63946;
+            padding-top: 15px;
+            border-top: 2px solid #ccc;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+        
+        .modal h2 { margin-bottom: 20px; }
+        
+        .finishing-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .finishing-option:hover { border-color: #0066cc; }
+        .finishing-option.selected { border-color: #0066cc; background: #f0f7ff; }
+        
+        @media (max-width: 1200px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <img src="./tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+    </div>
+    
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>Design Your Custom Banner</h1>
+                <p>Call us: <span class="phone">866-419-7446</span></p>
+            </div>
+            <div class="nav-links">
+                <a href="./index.html">Home</a>
+                <a href="./products.html">Products</a>
+                <a href="./checkout.html">Cart (<span id="cartCount">0</span>)</a>
+                <a href="./login.html" id="loginLink">Login</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="breadcrumbs">
+        <a href="./index.html">Home</a> / <a href="./products.html">Products</a> / <span>Design Tool</span>
+    </div>
+    
+    <div class="container">
+        <aside class="tools-sidebar">
+            <button class="tool-btn active" onclick="selectTool('text')" data-tool="text">
+                <div class="tool-icon">T</div>
+                <div class="tool-label">Add<br>TEXT</div>
+            </button>
+            <button class="tool-btn" onclick="selectTool('image')" data-tool="image">
+                <div class="tool-icon">🖼️</div>
+                <div class="tool-label">Upload<br>IMAGE</div>
+            </button>
+            <button class="tool-btn" onclick="selectTool('background')" data-tool="background">
+                <div class="tool-icon">➕</div>
+                <div class="tool-label">Add<br>BCKGND</div>
+            </button>
+        </aside>
+        
+        <main class="canvas-area">
+            <div class="canvas-header">
+                <div class="canvas-info">
+                    <div>
+                        <label>Quantity:</label>
+                        <select id="quantity" onchange="updatePrice()">
+                            <option value="1">1</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Size (H x W):</label>
+                        <input type="number" id="customHeight" value="2" min="1" max="12" step="0.5" style="width:70px" onchange="updateCanvasSize()"> ft x
+                        <input type="number" id="customWidth" value="4" min="1" max="25" step="0.5" style="width:70px" onchange="updateCanvasSize()"> ft
+                    </div>
+                    <div>
+                        <label>Unit Price:</label>
+                        <span id="unitPrice" style="font-size:1.3rem; font-weight:700; color:#e63946;">$27.04</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="position: relative; display: inline-block;">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="designCanvas" width="800" height="400"></canvas>
+                    <div class="canvas-scale" style="top:-30px; left:50%; transform:translateX(-50%);" id="scaleWidth">4ft</div>
+                    <div class="canvas-scale" style="right:-70px; top:50%; transform:translateY(-50%);" id="scaleHeight">2ft</div>
+                </div>
+                <button class="undo-btn" onclick="undo()" title="Undo">↶</button>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+                <button class="btn btn-primary" onclick="addToCart()">🛒 Add to Cart</button>
+                <button class="btn btn-warning" onclick="requestQuote()">📧 Request Quote</button>
+            </div>
+        </main>
+        
+        <aside class="settings-sidebar">
+            <div id="textPanel" class="settings-panel active">
+                <div class="panel-title">Text Settings</div>
+                <div class="control-group">
+                    <label>Text</label>
+                    <input type="text" id="textInput" placeholder="Enter your text">
+                </div>
+                <div class="control-group">
+                    <label>Font</label>
+                    <select id="fontSelect">
+                        <option>Roboto</option>
+                        <option>Open Sans</option>
+                        <option>Montserrat</option>
+                        <option>Lato</option>
+                        <option>Oswald</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Size: <span id="fontSizeValue">48px</span></label>
+                    <input type="range" id="fontSize" min="10" max="200" value="48" oninput="document.getElementById('fontSizeValue').textContent = this.value + 'px'">
+                </div>
+                <div class="control-group">
+                    <label>Color</label>
+                    <input type="color" id="textColor" value="#000000">
+                    <div class="color-grid">
+                        <div class="color-swatch" style="background:#000000" onclick="document.getElementById('textColor').value='#000000'"></div>
+                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="document.getElementById('textColor').value='#FFFFFF'"></div>
+                        <div class="color-swatch" style="background:#E63946" onclick="document.getElementById('textColor').value='#E63946'"></div>
+                        <div class="color-swatch" style="background:#0066CC" onclick="document.getElementById('textColor').value='#0066CC'"></div>
+                        <div class="color-swatch" style="background:#28A745" onclick="document.getElementById('textColor').value='#28A745'"></div>
+                        <div class="color-swatch" style="background:#FFC107" onclick="document.getElementById('textColor').value='#FFC107'"></div>
+                    </div>
+                </div>
+                <button class="control-group" onclick="addText()">Add Text</button>
+            </div>
+            
+            <div id="imagePanel" class="settings-panel">
+                <div class="panel-title">Image Upload</div>
+                <div class="control-group">
+                    <button onclick="document.getElementById('imageUpload').click()">📤 Upload File</button>
+                    <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+                </div>
+                <div class="control-group">
+                    <button onclick="matchCanvas()">📐 Match Canvas</button>
+                </div>
+                <div class="control-group">
+                    <button onclick="startOver()">🔄 Start Over</button>
+                </div>
+                <div id="uploadStatus" style="margin-top:15px; text-align:center; color:#666;"></div>
+            </div>
+            
+            <div id="backgroundPanel" class="settings-panel">
+                <div class="panel-title">Background</div>
+                <div class="control-group">
+                    <label>Color</label>
+                    <input type="color" id="bgColor" value="#FFFFFF" onchange="redraw()">
+                    <div class="color-grid">
+                        <div class="color-swatch" style="background:#FFFFFF; border:1px solid #ccc" onclick="document.getElementById('bgColor').value='#FFFFFF'; redraw()"></div>
+                        <div class="color-swatch" style="background:#000000" onclick="document.getElementById('bgColor').value='#000000'; redraw()"></div>
+                        <div class="color-swatch" style="background:#E63946" onclick="document.getElementById('bgColor').value='#E63946'; redraw()"></div>
+                        <div class="color-swatch" style="background:#0066CC" onclick="document.getElementById('bgColor').value='#0066CC'; redraw()"></div>
+                        <div class="color-swatch" style="background:#28A745" onclick="document.getElementById('bgColor').value='#28A745'; redraw()"></div>
+                        <div class="color-swatch" style="background:#FFC107" onclick="document.getElementById('bgColor').value='#FFC107'; redraw()"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="price-summary">
+                <div class="price-row">
+                    <span>Base Price:</span>
+                    <span id="basePrice">$27.04</span>
+                </div>
+                <div class="price-row">
+                    <span>Quantity:</span>
+                    <span id="qtyDisplay">1</span>
+                </div>
+                <div class="price-row price-total">
+                    <span>TOTAL:</span>
+                    <span id="totalPrice">$27.04</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Finishing Options Modal -->
+    <div id="finishingModal" class="modal">
+        <div class="modal-content">
+            <h2>Select Finishing Options</h2>
+            <p style="margin-bottom:20px; color:#666;">Choose how you want your banner finished:</p>
+            <div id="finishingOptionsList"></div>
+            <button class="btn btn-primary" onclick="confirmFinishing()" style="margin-top:20px;">Continue to Cart</button>
+            <button class="btn" onclick="closeModal()" style="background:#6c757d; color:white;">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Quote Request Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <h2>Request a Quote</h2>
+            <form id="quoteForm" onsubmit="submitQuote(event)">
+                <div class="control-group">
+                    <label>Name *</label>
+                    <input type="text" id="quoteName" required>
+                </div>
+                <div class="control-group">
+                    <label>Email *</label>
+                    <input type="email" id="quoteEmail" required>
+                </div>
+                <div class="control-group">
+                    <label>Phone</label>
+                    <input type="tel" id="quotePhone">
+                </div>
+                <div class="control-group">
+                    <label>Additional Notes</label>
+                    <textarea id="quoteNotes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Quote Request</button>
+                <button type="button" class="btn" onclick="closeModal()" style="background:#6c757d; color:white;">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { auth, onAuthStateChanged } from './firebase-auth.js';
+        
+        let canvas, ctx;
+        let canvasObjects = [];
+        let history = [];
+        let currentTool = 'text';
+        let selectedFinishing = null;
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('designCanvas');
+            ctx = canvas.getContext('2d');
+            loadGoogleFonts();
+            updateCartCount();
+            checkAuth();
+            redraw();
+        });
+        
+        function checkAuth() {
+            onAuthStateChanged(auth, (user) => {
+                const loginLink = document.getElementById('loginLink');
+                if (user) {
+                    loginLink.textContent = user.email.split('@')[0];
+                    loginLink.href = './dashboard.html';
+                }
+            });
+        }
+        
+        function loadGoogleFonts() {
+            const link = document.createElement('link');
+            link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&family=Lato:wght@400;700&family=Oswald:wght@400;700&display=swap';
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+        }
+        
+        window.selectTool = function(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+            document.querySelectorAll('.settings-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(tool + 'Panel').classList.add('active');
+        };
+        
+        window.addText = function() {
+            const text = document.getElementById('textInput').value;
+            if (!text) {
+                alert('Please enter some text');
+                return;
+            }
+            
+            canvasObjects.push({
+                type: 'text',
+                content: text,
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                fontSize: parseInt(document.getElementById('fontSize').value),
+                font: document.getElementById('fontSelect').value,
+                color: document.getElementById('textColor').value
+            });
+            
+            saveHistory();
+            redraw();
+        };
+        
+        window.handleImageUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('uploadStatus').textContent = 'Uploading...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    canvasObjects.push({
+                        type: 'image',
+                        img: img,
+                        x: 0,
+                        y: 0,
+                        width: img.width,
+                        height: img.height,
+                        scale: Math.min(canvas.width / img.width, canvas.height / img.height)
+                    });
+                    saveHistory();
+                    redraw();
+                    document.getElementById('uploadStatus').textContent = '✓ Image uploaded!';
+                    setTimeout(() => document.getElementById('uploadStatus').textContent = '', 3000);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        window.matchCanvas = function() {
+            if (canvasObjects.length === 0) return;
+            const lastObj = canvasObjects[canvasObjects.length - 1];
+            if (lastObj.type === 'image') {
+                lastObj.scale = Math.max(canvas.width / lastObj.img.width, canvas.height / lastObj.img.height);
+                lastObj.x = (canvas.width - lastObj.img.width * lastObj.scale) / 2;
+                lastObj.y = (canvas.height - lastObj.img.height * lastObj.scale) / 2;
+                redraw();
+            }
+        };
+        
+        window.startOver = function() {
+            if (confirm('Clear all design elements?')) {
+                canvasObjects = [];
+                history = [];
+                redraw();
+            }
+        };
+        
+        window.undo = function() {
+            if (history.length > 0) {
+                canvasObjects = JSON.parse(history.pop());
+                redraw();
+            }
+        };
+        
+        function saveHistory() {
+            history.push(JSON.stringify(canvasObjects));
+            if (history.length > 20) history.shift();
+        }
+        
+        window.redraw = function() {
+            ctx.fillStyle = document.getElementById('bgColor').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            canvasObjects.forEach(obj => {
+                if (obj.type === 'text') {
+                    ctx.font = `${obj.fontSize}px ${obj.font}`;
+                    ctx.fillStyle = obj.color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(obj.content, obj.x, obj.y);
+                } else if (obj.type === 'image') {
+                    ctx.drawImage(obj.img, obj.x, obj.y, obj.img.width * obj.scale, obj.img.height * obj.scale);
+                }
+            });
+        };
+        
+        window.updateCanvasSize = function() {
+            const heightFt = parseFloat(document.getElementById('customHeight').value);
+            const widthFt = parseFloat(document.getElementById('customWidth').value);
+            
+            const ratio = widthFt / heightFt;
+            const maxWidth = 900;
+            const maxHeight = 600;
+            
+            if (ratio > maxWidth / maxHeight) {
+                canvas.width = maxWidth;
+                canvas.height = maxWidth / ratio;
+            } else {
+                canvas.height = maxHeight;
+                canvas.width = maxHeight * ratio;
+            }
+            
+            document.getElementById('scaleWidth').textContent = `${widthFt}ft (${widthFt * 12}")`;
+            document.getElementById('scaleHeight').textContent = `${heightFt}ft (${heightFt * 12}")`;
+            
+            redraw();
+            updatePrice();
+        };
+        
+        window.updatePrice = function() {
+            const qty = parseInt(document.getElementById('quantity').value);
+            const heightFt = parseFloat(document.getElementById('customHeight').value);
+            const widthFt = parseFloat(document.getElementById('customWidth').value);
+            const sqFt = heightFt * widthFt;
+            const pricePerSqFt = 1.75;
+            const unitPrice = sqFt * pricePerSqFt;
+            const total = unitPrice * qty;
+            
+            document.getElementById('unitPrice').textContent = `$${unitPrice.toFixed(2)}`;
+            document.getElementById('basePrice').textContent = `$${unitPrice.toFixed(2)}`;
+            document.getElementById('qtyDisplay').textContent = qty;
+            document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
+        };
+        
+        window.addToCart = function() {
+            if (canvasObjects.length === 0) {
+                alert('Please add some design elements first!');
+                return;
+            }
+            
+            // Show finishing options modal
+            document.getElementById('finishingModal').classList.add('show');
+            loadFinishingOptions();
+        };
+        
+        function loadFinishingOptions() {
+            const options = [
+                {id: 'grommets', name: 'Hems & Grommets', price: 15, desc: 'Hemmed edges with metal grommets every 2 feet'},
+                {id: 'pockets', name: 'Pole Pockets', price: 20, desc: 'Top and bottom pole pockets'},
+                {id: 'rope', name: 'Rope & Grommets', price: 18, desc: 'Includes nylon rope'},
+                {id: 'slits', name: 'Wind Slits', price: 10, desc: 'Reinforced wind slits'},
+                {id: 'none', name: 'No Finishing', price: 0, desc: 'Raw edges'}
+            ];
+            
+            const container = document.getElementById('finishingOptionsList');
+            container.innerHTML = options.map(opt => `
+                <div class="finishing-option" onclick="selectFinishing('${opt.id}', ${opt.price})">
+                    <strong>${opt.name}</strong> ${opt.price > 0 ? `(+$${opt.price})` : ''}
+                    <div style="font-size:0.9rem; color:#666; margin-top:5px;">${opt.desc}</div>
+                </div>
+            `).join('');
+        }
+        
+        window.selectFinishing = function(id, price) {
+            selectedFinishing = {id, price};
+            document.querySelectorAll('.finishing-option').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.finishing-option').classList.add('selected');
+        };
+        
+        window.confirmFinishing = function() {
+            if (!selectedFinishing) {
+                alert('Please select a finishing option');
+                return;
+            }
+            
+            const design = {
+                preview: canvas.toDataURL(),
+                price: document.getElementById('totalPrice').textContent,
+                size: `${document.getElementById('customHeight').value}' x ${document.getElementById('customWidth').value}'`,
+                quantity: document.getElementById('quantity').value,
+                finishing: selectedFinishing,
+                timestamp: Date.now()
+            };
+            
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart.push({
+                name: 'Custom Banner Design',
+                total: design.price,
+                size: design.size,
+                quantity: design.quantity,
+                finishing: selectedFinishing.id,
+                preview: design.preview
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            closeModal();
+            updateCartCount();
+            
+            if (confirm('✓ Added to cart! Go to checkout?')) {
+                window.location.href = './checkout.html';
+            }
+        };
+        
+        window.requestQuote = function() {
+            document.getElementById('quoteModal').classList.add('show');
+        };
+        
+        window.submitQuote = async function(e) {
+            e.preventDefault();
+            
+            const quoteData = {
+                _subject: 'TC SignLab - Custom Banner Quote Request',
+                _template: 'box',
+                Name: document.getElementById('quoteName').value,
+                Email: document.getElementById('quoteEmail').value,
+                Phone: document.getElementById('quotePhone').value || 'Not provided',
+                Size: `${document.getElementById('customHeight').value}' x ${document.getElementById('customWidth').value}'`,
+                Quantity: document.getElementById('quantity').value,
+                'Unit Price': document.getElementById('unitPrice').textContent,
+                Total: document.getElementById('totalPrice').textContent,
+                Notes: document.getElementById('quoteNotes').value || 'None'
+            };
+            
+            try {
+                await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(quoteData)
+                });
+                
+                alert('✓ Quote request sent! We\'ll respond within 24 hours.');
+                closeModal();
+                document.getElementById('quoteForm').reset();
+            } catch (error) {
+                alert('Error sending quote. Please try again.');
+            }
+        };
+        
+        window.closeModal = function() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('show'));
+        };
+        
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            document.getElementById('cartCount').textContent = cart.length;
+        }
+        
+        updateCanvasSize();
+        updatePrice();
+    </script>
+</body>
+</html>
