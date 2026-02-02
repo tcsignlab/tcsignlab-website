@@ -724,9 +724,6 @@ function getFinishingOptions() {
         
         window.editProduct = async function(productId) {
             currentEditId = productId;
-            // Clear and reload finishing options
-productFinishingOptions = product.finishingOptions || [];
-displaySelectedFinishing();
 
             const productRef = ref(database, `products/${productId}`);
             const snapshot = await get(productRef);
