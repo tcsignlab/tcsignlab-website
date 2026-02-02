@@ -189,20 +189,10 @@
         .alert-success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
         .alert-error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         #productForm { display: none; }
-        .sync-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .sync-status.synced { background: #d4edda; color: #155724; }
-        .sync-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
         }
     </style>
 </head>
@@ -213,10 +203,9 @@
             <h1>Admin Panel</h1>
         </div>
         <div style="display:flex; align-items:center; gap:20px;">
-            <div class="sync-status synced" id="syncStatus">
-                <span class="sync-indicator"></span>
-                <span id="syncText">Synced</span>
-            </div>
+            <span id="statusIndicator" style="padding:8px 16px; border-radius:20px; background:#d4edda; color:#155724; font-weight:600;">
+                ● Connected
+            </span>
             <button class="logout-btn" onclick="logout()">🚪 Logout</button>
         </div>
     </div>
@@ -285,9 +274,7 @@
                             <label>Product Image URL</label>
                             <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg" oninput="previewImage(this.value)">
                             <div class="image-preview" id="imagePreview">
-                                <div class="image-preview-placeholder">
-                                    📸 Image preview will appear here
-                                </div>
+                                <div class="image-preview-placeholder">📸 Image preview will appear here</div>
                             </div>
                         </div>
                         
@@ -337,11 +324,11 @@
                 </div>
                 
                 <div id="alertBox"></div>
-                <div id="productsList"></div>
+                <div id="productsList" class="loading">Loading products...</div>
             </div>
         </div>
         
-        <!-- CATEGORIES TAB -->
+        <!-- OTHER TABS (Categories, Shipping, Settings) -->
         <div id="categoriesTab" class="tab-content">
             <div class="card">
                 <h2>Categories Management</h2>
@@ -360,7 +347,6 @@
             </div>
         </div>
         
-        <!-- SHIPPING TAB -->
         <div id="shippingTab" class="tab-content">
             <div class="card">
                 <h2>Shipping Methods</h2>
@@ -385,7 +371,6 @@
             </div>
         </div>
         
-        <!-- SETTINGS TAB -->
         <div id="settingsTab" class="tab-content">
             <div class="card">
                 <h2>Business Settings</h2>
@@ -416,6 +401,12 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, push, set, update, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         
+        // PASSWORD PROTECTION - Check session
+        if (!sessionStorage.getItem('adminAuth')) {
+            window.location.href = './admin-login.html';
+        }
+        
+        console.log('Admin panel initializing...');
         
         const firebaseConfig = {
             apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
@@ -429,6 +420,7 @@
         
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        console.log('Firebase initialized');
         
         let currentEditId = null;
         let categories = {};
@@ -466,7 +458,7 @@
         // Logout
         window.logout = function() {
             if (confirm('Logout from admin panel?')) {
-                sessionStorage.clear();
+                sessionStorage.removeItem('adminAuth');
                 window.location.href = './admin-login.html';
             }
         };
@@ -537,7 +529,6 @@
             
             const option = FINISHING_CATEGORIES[category][parseInt(optionIndex)];
             
-            // Check if already added
             const exists = productFinishingOptions.find(f => f.category === category && f.name === option.name);
             if (exists) {
                 alert('⚠️ This option is already added!');
@@ -553,7 +544,6 @@
             
             displaySelectedFinishing();
             
-            // Reset selectors
             document.getElementById('finishingCategory').value = '';
             document.getElementById('finishingOptionSelectGroup').style.display = 'none';
         };
@@ -625,31 +615,11 @@
             const maxWidth = document.getElementById('productMaxWidth').value;
             const maxHeight = document.getElementById('productMaxHeight').value;
             
-            // VALIDATION
-            if (!name) {
-                alert('⚠️ Product name is required!');
-                return;
-            }
-            
-            if (!category) {
-                alert('⚠️ Please select a category!');
-                return;
-            }
-            
-            if (!price || price <= 0) {
-                alert('⚠️ Please enter a valid base price!');
-                return;
-            }
-            
-            if (finishingOptions.length === 0) {
-                alert('⚠️ Please add at least one finishing option!');
-                return;
-            }
-            
-            if (!maxWidth || maxWidth <= 0 || !maxHeight || maxHeight <= 0) {
-                alert('⚠️ Please enter valid maximum dimensions!');
-                return;
-            }
+            if (!name) { alert('⚠️ Product name is required!'); return; }
+            if (!category) { alert('⚠️ Please select a category!'); return; }
+            if (!price || price <= 0) { alert('⚠️ Please enter a valid base price!'); return; }
+            if (finishingOptions.length === 0) { alert('⚠️ Please add at least one finishing option!'); return; }
+            if (!maxWidth || maxWidth <= 0 || !maxHeight || maxHeight <= 0) { alert('⚠️ Please enter valid maximum dimensions!'); return; }
             
             const product = {
                 name,
@@ -724,8 +694,10 @@
         function displayProducts() {
             const container = document.getElementById('productsList');
             
+            console.log('Displaying products:', products.length);
+            
             if (products.length === 0) {
-                container.innerHTML = '<p>No products yet. Click "Add New Product" to create one!</p>';
+                container.innerHTML = '<div class="loading">No products yet. Click "Add New Product" to create one!</div>';
                 return;
             }
             
@@ -738,7 +710,7 @@
                             <div style="display:flex; gap:20px; flex-wrap:wrap; margin:10px 0;">
                                 <span><strong>Base Price:</strong> $${product.basePrice}/sq ft</span>
                                 <span><strong>Category:</strong> ${categories[product.category]?.name || 'N/A'}</span>
-                                <span><strong>Max Dimensions:</strong> ${product.maxWidth || 'N/A'}"W x ${product.maxHeight || 'N/A'}"H</span>
+                                <span><strong>Max:</strong> ${product.maxWidth || 'N/A'}"W x ${product.maxHeight || 'N/A'}"H</span>
                                 <span><strong>Status:</strong> ${product.active ? '✓ Active' : '✗ Inactive'}</span>
                             </div>
                             ${product.imageUrl ? `<img src="${product.imageUrl}" style="max-width:150px; margin:10px 0; border-radius:6px;" alt="${product.name}">` : ''}
@@ -874,7 +846,10 @@
         };
         
         // LOAD DATA
+        console.log('Setting up Firebase listeners...');
+        
         onValue(ref(database, 'categories'), (snapshot) => {
+            console.log('Categories loaded:', snapshot.val());
             categories = snapshot.val() || {};
             const select = document.getElementById('productCategory');
             select.innerHTML = '<option value="">Select Category</option>' + 
@@ -883,8 +858,10 @@
         });
         
         onValue(ref(database, 'products'), (snapshot) => {
+            console.log('Products snapshot received:', snapshot.val());
             const data = snapshot.val() || {};
             products = Object.entries(data).map(([id, product]) => ({id, ...product}));
+            console.log('Products array:', products);
             displayProducts();
         });
         
@@ -904,6 +881,8 @@
                 document.getElementById('businessAddress').value = settings.address || '';
             }
         });
+        
+        console.log('Admin panel ready!');
     </script>
 </body>
 </html>
