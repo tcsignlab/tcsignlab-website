@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - TC SignLab</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #E63946; --secondary: #1D3557; --light: #F8F9FA; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--light); }
+        .header { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav { max-width: 1400px; margin: 0 auto; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--primary); font-size: 1.8rem; font-weight: 700; }
+        .logo img { height: 50px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #212529; font-weight: 600; }
+        .breadcrumbs { max-width: 1400px; margin: 20px auto; padding: 0 30px; color: #666; }
+        .breadcrumbs a { color: var(--primary); text-decoration: none; }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 30px; }
+        .product-detail { background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .product-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; }
+        .product-image { width: 100%; aspect-ratio: 1; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 6rem; }
+        .product-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .product-title { font-size: 2.5rem; font-weight: 700; color: var(--secondary); margin-bottom: 20px; }
+        .product-price { font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; }
+        .product-description { font-size: 1.1rem; line-height: 1.6; color: #666; margin-bottom: 30px; }
+        .product-specs { background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 30px; }
+        .spec-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+        .spec-row:last-child { border-bottom: none; }
+        .spec-label { font-weight: 600; }
+        .finishing-options { margin-bottom: 30px; }
+        .finishing-options h3 { margin-bottom: 15px; }
+        .finishing-option { background: white; border: 2px solid #dee2e6; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
+        .finishing-option strong { color: var(--secondary); }
+        .btn { padding: 15px 30px; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #d62828; }
+        .btn-secondary { background: var(--secondary); color: white; margin-left: 10px; }
+        .btn-secondary:hover { background: #14213d; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 10px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #dee2e6; border-radius: 6px; }
+        @media (max-width: 768px) { .product-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <nav class="nav">
+            <a href="./index.html" class="logo">
+                <img src="./tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+                <span>TC SignLab</span>
+            </a>
+            <div class="nav-links">
+                <a href="./index.html">Home</a>
+                <a href="./products.html">Products</a>
+                <a href="./configurator.html">Design Tool</a>
+                <a href="./checkout.html">Cart</a>
+                <a href="./login.html">Login</a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="breadcrumbs">
+        <a href="./index.html">Home</a> / <a href="./products.html">Products</a> / <span id="breadcrumbProduct">Product</span>
+    </div>
+    
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-grid">
+                <div>
+                    <div class="product-image" id="productImage">📦</div>
+                </div>
+                <div>
+                    <h1 class="product-title" id="productTitle">Loading...</h1>
+                    <div class="product-price" id="productPrice">$0.00/sq ft</div>
+                    <p class="product-description" id="productDescription"></p>
+                    
+                    <div class="product-specs">
+                        <div class="spec-row">
+                            <span class="spec-label">Base Price:</span>
+                            <span id="specPrice">-</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Maximum Width:</span>
+                            <span id="specWidth">-</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Maximum Height:</span>
+                            <span id="specHeight">-</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Category:</span>
+                            <span id="specCategory">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="finishing-options" id="finishingSection" style="display:none;">
+                        <h3>Available Finishing Options:</h3>
+                        <div id="finishingList"></div>
+                    </div>
+                    
+                    <div>
+                        <button class="btn btn-primary" onclick="requestQuote()">📧 Request Quote</button>
+                        <button class="btn btn-secondary" onclick="window.location.href='./products.html'">← Back to Products</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <h2>Request Quote</h2>
+            <form id="quoteForm" onsubmit="submitQuote(event)">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h3 id="quoteProductName"></h3>
+                    <p id="quoteProductDetails" style="color: #666;"></p>
+                </div>
+                <div class="form-group"><label>Name *</label><input type="text" id="quoteName" required></div>
+                <div class="form-group"><label>Email *</label><input type="email" id="quoteEmail" required></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="quotePhone"></div>
+                <div class="form-group"><label>Company</label><input type="text" id="quoteCompany"></div>
+                <div class="form-group"><label>Quantity *</label><input type="number" id="quoteQuantity" value="1" min="1" required></div>
+                <div class="form-group"><label>Size/Dimensions</label><input type="text" id="quoteSize" placeholder="e.g., 2ft x 4ft"></div>
+                <div class="form-group" id="finishingGroup" style="display:none;">
+                    <label>Finishing Options</label>
+                    <div id="quoteFinishingList"></div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea id="quoteNotes" rows="4"></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Quote Request</button>
+                <button type="button" class="btn" onclick="closeModal()" style="background: #6c757d; color: white; width: 100%; margin-top: 10px;">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        const app = initializeApp({
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        });
+        
+        const database = getDatabase(app);
+        let product = null, categories = {};
+        
+        async function loadProduct() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) { window.location.href = './products.html'; return; }
+            
+            const [productSnap, catSnap] = await Promise.all([
+                get(ref(database, `products/${id}`)),
+                get(ref(database, 'categories'))
+            ]);
+            
+            product = productSnap.val();
+            categories = catSnap.val() || {};
+            
+            if (!product) { window.location.href = './products.html'; return; }
+            
+            document.getElementById('breadcrumbProduct').textContent = product.name;
+            document.getElementById('productTitle').textContent = product.name;
+            document.getElementById('productPrice').textContent = `From $${product.basePrice}/sq ft`;
+            document.getElementById('productDescription').textContent = product.description || 'Quality product for your business needs.';
+            document.getElementById('specPrice').textContent = `$${product.basePrice} per square foot`;
+            document.getElementById('specWidth').textContent = `${product.maxWidth || 'N/A'} inches`;
+            document.getElementById('specHeight').textContent = `${product.maxHeight || 'N/A'} inches`;
+            document.getElementById('specCategory').textContent = categories[product.category]?.name || 'N/A';
+            
+            if (product.imageUrl) {
+                document.getElementById('productImage').innerHTML = `<img src="${product.imageUrl}" alt="${product.name}">`;
+            }
+            
+            if (product.finishingOptions && product.finishingOptions.length > 0) {
+                document.getElementById('finishingSection').style.display = 'block';
+                document.getElementById('finishingList').innerHTML = product.finishingOptions.map(o => `
+                    <div class="finishing-option">
+                        <strong>${o.name}</strong> ${o.price > 0 ? `<span style="color:#e63946;">(+$${o.price})</span>` : ''}
+                        <div style="color:#666; margin-top:5px;">${o.description || ''}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        window.requestQuote = function() {
+            document.getElementById('quoteProductName').textContent = product.name;
+            document.getElementById('quoteProductDetails').textContent = `Base: $${product.basePrice}/sq ft | Max: ${product.maxWidth || 'N/A'}" x ${product.maxHeight || 'N/A'}"`;
+            
+            const fg = document.getElementById('finishingGroup'), fl = document.getElementById('quoteFinishingList');
+            if (product.finishingOptions && product.finishingOptions.length > 0) {
+                fg.style.display = 'block';
+                fl.innerHTML = product.finishingOptions.map(o => `
+                    <label style="display:block; margin:8px 0;">
+                        <input type="checkbox" name="finishing" value="${o.name}">
+                        ${o.name} ${o.price > 0 ? `(+$${o.price})` : ''} - ${o.description || ''}
+                    </label>
+                `).join('');
+            } else { fg.style.display = 'none'; }
+            document.getElementById('quoteModal').classList.add('show');
+        };
+        
+        window.submitQuote = async function(e) {
+            e.preventDefault();
+            const finishing = Array.from(document.querySelectorAll('input[name="finishing"]:checked')).map(c => c.value);
+            try {
+                await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        _subject: `TC SignLab - Quote: ${product.name}`,
+                        _template: 'box',
+                        Product: product.name,
+                        'Base Price': `$${product.basePrice}/sq ft`,
+                        'Max Dimensions': `${product.maxWidth || 'N/A'}" x ${product.maxHeight || 'N/A'}"`,
+                        Name: document.getElementById('quoteName').value,
+                        Email: document.getElementById('quoteEmail').value,
+                        Phone: document.getElementById('quotePhone').value || 'N/A',
+                        Company: document.getElementById('quoteCompany').value || 'N/A',
+                        Quantity: document.getElementById('quoteQuantity').value,
+                        Size: document.getElementById('quoteSize').value || 'N/A',
+                        'Finishing': finishing.join(', ') || 'None',
+                        Notes: document.getElementById('quoteNotes').value || 'None'
+                    })
+                });
+                alert('✓ Quote sent! We\'ll respond within 24 hours.');
+                closeModal();
+                document.getElementById('quoteForm').reset();
+            } catch { alert('❌ Error. Please call 866-419-7446.'); }
+        };
+        
+        window.closeModal = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        
+        loadProduct();
+    </script>
+</body>
+</html>
