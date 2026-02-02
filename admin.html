@@ -167,6 +167,29 @@
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .image-preview {
+    margin-top: 15px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px;
+    background: #f8f9fa;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    display: block;
+    border-radius: 4px;
+}
+
+.image-preview-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #6c757d;
+    background: white;
+    border: 2px dashed #dee2e6;
+    border-radius: 4px;
+}
     </style>
 </head>
 <body>
@@ -245,22 +268,50 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Product Image URL</label>
-                            <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg">
-                        </div>
+                      <div class="form-group">
+    <label>Product Image URL</label>
+    <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg" oninput="previewImage(this.value)">
+    <div class="image-preview" id="imagePreview">
+        <div class="image-preview-placeholder">
+            📸 Image preview will appear here
+        </div>
+    </div>
+</div>
                         
                         <!-- Finishing Options -->
-                        <div class="card" style="border:2px solid var(--primary); padding:20px; margin:20px 0;">
-                            <h3 style="color:var(--primary); margin-bottom:15px;">Finishing Options * (Required)</h3>
-                            <p style="color:#666; margin-bottom:15px;">Add at least one finishing option for this product</p>
-                            
-                            <div id="finishingOptionsList"></div>
-                            
-                            <button type="button" onclick="addFinishingOption()" class="btn btn-success" style="margin-top:10px;">
-                                + Add Finishing Option
-                            </button>
-                        </div>
+                       <div class="card" style="border:2px solid var(--primary); padding:20px; margin:20px 0;">
+    <h3 style="color:var(--primary); margin-bottom:15px;">Finishing Options * (Required)</h3>
+    <p style="color:#666; margin-bottom:15px;">Select finishing options from predefined categories</p>
+    
+    <div style="background:#fff3cd; padding:15px; border-radius:6px; margin-bottom:15px;">
+        <div class="form-group" style="margin-bottom:10px;">
+            <label>Select Category:</label>
+            <select id="finishingCategory" onchange="loadFinishingOptionsForCategory()">
+                <option value="">-- Choose Category --</option>
+                <option value="Edges">Edges (Hemming, Sealing)</option>
+                <option value="Mounting">Mounting Hardware</option>
+                <option value="Reinforcement">Reinforcement Options</option>
+                <option value="Special">Special Services</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="finishingOptionSelectGroup" style="display:none; margin-bottom:10px;">
+            <label>Select Option:</label>
+            <select id="finishingOptionSelect">
+                <option value="">-- Choose Option --</option>
+            </select>
+        </div>
+        
+        <button type="button" onclick="addSelectedFinishing()" class="btn btn-success" style="width:100%;">
+            ✅ Add Selected Option
+        </button>
+    </div>
+    
+    <div id="selectedFinishingList">
+        <p style="color:#999; text-align:center; font-style:italic;">No finishing options added yet</p>
+    </div>
+</div>
+
                         
                         <div style="display:flex; gap:10px; margin-top:20px;">
                             <button type="submit" id="productSubmitBtn" class="btn btn-primary" style="flex:1;">
@@ -349,7 +400,49 @@
         </div>
     </div>
     
-    <script type="module">
+    <script type="module">const FINISHING_CATEGORIES = {
+    'Edges': [
+        {name: 'Hems & Grommets', price: 15, description: 'Hemmed edges with metal grommets every 2 feet'},
+        {name: 'Heat Sealed Edges', price: 12, description: 'Clean sealed edges, no hemming'},
+        {name: 'Sewn Edges', price: 10, description: 'Double-stitched edges for durability'},
+        {name: 'Raw Cut', price: 0, description: 'Unfinished edges (not recommended for outdoor)'}
+    ],
+    'Mounting': [
+        {name: 'Pole Pockets', price: 20, description: 'Top and bottom pole pockets for mounting'},
+        {name: 'Grommets Only', price: 8, description: 'Metal grommets without hemming'},
+        {name: 'Velcro Strips', price: 25, description: 'Industrial velcro for easy mounting'},
+        {name: 'No Mounting Hardware', price: 0, description: 'No mounting hardware included'}
+    ],
+    'Reinforcement': [
+        {name: 'Wind Slits', price: 10, description: 'Reinforced slits for wind resistance'},
+        {name: 'Corner Reinforcement', price: 15, description: 'Extra reinforcement on all four corners'},
+        {name: 'Rope & Grommets', price: 18, description: 'Includes nylon rope for hanging'},
+        {name: 'No Reinforcement', price: 0, description: 'Standard construction'}
+    ],
+    'Special': [
+        {name: 'Custom Size Cut', price: 30, description: 'Precise custom sizing'},
+        {name: 'Rush Production', price: 50, description: '24-hour turnaround'},
+        {name: 'Weather Coating', price: 35, description: 'Extra UV and weather protection'},
+        {name: 'None', price: 0, description: 'No special options'}
+    ]
+};
+
+        window.previewImage = function(url) {
+    const preview = document.getElementById('imagePreview');
+    if (!url || url.trim() === '') {
+        preview.innerHTML = '<div class="image-preview-placeholder">📸 Image preview will appear here</div>';
+        return;
+    }
+    
+    const img = new Image();
+    img.onload = function() {
+        preview.innerHTML = `<img src="${url}" alt="Product preview">`;
+    };
+    img.onerror = function() {
+        preview.innerHTML = '<div class="image-preview-placeholder" style="color:#e63946;">❌ Failed to load image. Check URL.</div>';
+    };
+    img.src = url;
+};
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, push, set, update, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -376,6 +469,96 @@
         let currentEditId = null;
         let categories = {};
         let products = [];
+        let productFinishingOptions = [];
+
+window.loadFinishingOptionsForCategory = function() {
+    const category = document.getElementById('finishingCategory').value;
+    const selectGroup = document.getElementById('finishingOptionSelectGroup');
+    const optionSelect = document.getElementById('finishingOptionSelect');
+    
+    if (!category) {
+        selectGroup.style.display = 'none';
+        return;
+    }
+    
+    selectGroup.style.display = 'block';
+    const options = FINISHING_CATEGORIES[category];
+    
+    optionSelect.innerHTML = '<option value="">-- Choose Option --</option>' + 
+        options.map((opt, i) => 
+            `<option value="${i}">${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : '(Free)'}</option>`
+        ).join('');
+};
+
+window.addSelectedFinishing = function() {
+    const category = document.getElementById('finishingCategory').value;
+    const optionIndex = document.getElementById('finishingOptionSelect').value;
+    
+    if (!category || optionIndex === '') {
+        alert('⚠️ Please select both category and option!');
+        return;
+    }
+    
+    const option = FINISHING_CATEGORIES[category][parseInt(optionIndex)];
+    
+    // Check if already added
+    const exists = productFinishingOptions.find(f => f.category === category && f.name === option.name);
+    if (exists) {
+        alert('⚠️ This option is already added!');
+        return;
+    }
+    
+    productFinishingOptions.push({
+        category: category,
+        name: option.name,
+        price: option.price,
+        description: option.description
+    });
+    
+    displaySelectedFinishing();
+    
+    // Reset selectors
+    document.getElementById('finishingCategory').value = '';
+    document.getElementById('finishingOptionSelectGroup').style.display = 'none';
+};
+
+window.removeFinishingOption = function(index) {
+    productFinishingOptions.splice(index, 1);
+    displaySelectedFinishing();
+};
+
+function displaySelectedFinishing() {
+    const container = document.getElementById('selectedFinishingList');
+    
+    if (productFinishingOptions.length === 0) {
+        container.innerHTML = '<p style="color:#999; text-align:center; font-style:italic;">No finishing options added yet</p>';
+        return;
+    }
+    
+    container.innerHTML = productFinishingOptions.map((opt, i) => `
+        <div style="background:white; border:2px solid #0066cc; padding:15px; border-radius:6px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div style="flex:1;">
+                    <div style="font-weight:700; color:#1D3557; margin-bottom:5px;">
+                        ${opt.category}: ${opt.name}
+                        <span style="background:#E63946; color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem; margin-left:10px;">
+                            ${opt.price > 0 ? `+$${opt.price}` : 'Included'}
+                        </span>
+                    </div>
+                    <div style="color:#666; font-size:0.9rem;">${opt.description}</div>
+                </div>
+                <button type="button" onclick="removeFinishingOption(${i})" 
+                        style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; margin-left:15px;">
+                    ✕
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getFinishingOptions() {
+    return productFinishingOptions;
+}
         
         // Logout function
         window.logout = function() {
@@ -541,7 +724,10 @@
         
         window.editProduct = async function(productId) {
             currentEditId = productId;
-            
+            // Clear and reload finishing options
+productFinishingOptions = product.finishingOptions || [];
+displaySelectedFinishing();
+
             const productRef = ref(database, `products/${productId}`);
             const snapshot = await get(productRef);
             const product = snapshot.val();
@@ -559,6 +745,9 @@
             document.getElementById('productMaxWidth').value = product.maxWidth || 200;
             document.getElementById('productMaxHeight').value = product.maxHeight || 150;
             document.getElementById('productImageUrl').value = product.imageUrl || '';
+            document.getElementById('productImageUrl').value = product.imageUrl || '';
+previewImage(product.imageUrl || ''); // ADD THIS LINE
+
             document.getElementById('productActive').value = product.active ? 'true' : 'false';
             
             document.getElementById('finishingOptionsList').innerHTML = '';
