@@ -13,7 +13,8 @@
         .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--primary); font-size: 1.8rem; font-weight: 700; }
         .logo img { height: 50px; }
         .nav-links { display: flex; gap: 30px; align-items: center; }
-        .nav-links a { text-decoration: none; color: #212529; font-weight: 600; }
+        .nav-links a { text-decoration: none; color: #212529; font-weight: 600; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--primary); }
         .breadcrumbs { max-width: 1400px; margin: 20px auto; padding: 0 30px; color: #666; }
         .breadcrumbs a { color: var(--primary); text-decoration: none; }
         .container { max-width: 1400px; margin: 40px auto; padding: 0 30px; }
@@ -28,10 +29,15 @@
         .spec-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
         .spec-row:last-child { border-bottom: none; }
         .spec-label { font-weight: 600; }
-        .finishing-options { margin-bottom: 30px; }
-        .finishing-options h3 { margin-bottom: 15px; }
-        .finishing-option { background: white; border: 2px solid #dee2e6; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
-        .finishing-option strong { color: var(--secondary); }
+        .finishing-selector { margin-bottom: 30px; background: #fff3cd; padding: 20px; border-radius: 6px; border: 2px solid #ffc107; }
+        .finishing-selector h3 { margin-bottom: 15px; color: var(--secondary); }
+        .finishing-group { margin-bottom: 20px; }
+        .finishing-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+        .finishing-group select { width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 1rem; background: white; }
+        .selected-finishing { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px; }
+        .selected-finishing h4 { margin-bottom: 10px; color: var(--secondary); }
+        .selected-item { padding: 8px 12px; background: white; border: 2px solid #0066cc; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .price-badge { background: var(--primary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.9rem; }
         .btn { padding: 15px 30px; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #d62828; }
@@ -97,9 +103,14 @@
                         </div>
                     </div>
                     
-                    <div class="finishing-options" id="finishingSection" style="display:none;">
-                        <h3>Available Finishing Options:</h3>
-                        <div id="finishingList"></div>
+                    <div class="finishing-selector" id="finishingSection" style="display:none;">
+                        <h3>🎨 Customize Your Finishing Options</h3>
+                        <p style="color:#666; margin-bottom:15px;">Select your preferred finishing options from the dropdowns below:</p>
+                        <div id="finishingDropdowns"></div>
+                        <div class="selected-finishing" id="selectedSummary" style="display:none;">
+                            <h4>Selected Options:</h4>
+                            <div id="selectedList"></div>
+                        </div>
                     </div>
                     
                     <div>
@@ -117,7 +128,8 @@
             <form id="quoteForm" onsubmit="submitQuote(event)">
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
                     <h3 id="quoteProductName"></h3>
-                    <p id="quoteProductDetails" style="color: #666;"></p>
+                    <p id="quoteProductDetails" style="color: #666; margin-bottom: 10px;"></p>
+                    <div id="quoteSelectedOptions" style="margin-top:10px;"></div>
                 </div>
                 <div class="form-group"><label>Name *</label><input type="text" id="quoteName" required></div>
                 <div class="form-group"><label>Email *</label><input type="email" id="quoteEmail" required></div>
@@ -125,11 +137,7 @@
                 <div class="form-group"><label>Company</label><input type="text" id="quoteCompany"></div>
                 <div class="form-group"><label>Quantity *</label><input type="number" id="quoteQuantity" value="1" min="1" required></div>
                 <div class="form-group"><label>Size/Dimensions</label><input type="text" id="quoteSize" placeholder="e.g., 2ft x 4ft"></div>
-                <div class="form-group" id="finishingGroup" style="display:none;">
-                    <label>Finishing Options</label>
-                    <div id="quoteFinishingList"></div>
-                </div>
-                <div class="form-group"><label>Notes</label><textarea id="quoteNotes" rows="4"></textarea></div>
+                <div class="form-group"><label>Additional Notes</label><textarea id="quoteNotes" rows="4"></textarea></div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Send Quote Request</button>
                 <button type="button" class="btn" onclick="closeModal()" style="background: #6c757d; color: white; width: 100%; margin-top: 10px;">Cancel</button>
             </form>
@@ -151,7 +159,7 @@
         });
         
         const database = getDatabase(app);
-        let product = null, categories = {};
+        let product = null, categories = {}, selectedFinishing = {};
         
         async function loadProduct() {
             const params = new URLSearchParams(window.location.search);
@@ -183,35 +191,97 @@
             
             if (product.finishingOptions && product.finishingOptions.length > 0) {
                 document.getElementById('finishingSection').style.display = 'block';
-                document.getElementById('finishingList').innerHTML = product.finishingOptions.map(o => `
-                    <div class="finishing-option">
-                        <strong>${o.name}</strong> ${o.price > 0 ? `<span style="color:#e63946;">(+$${o.price})</span>` : ''}
-                        <div style="color:#666; margin-top:5px;">${o.description || ''}</div>
-                    </div>
-                `).join('');
+                loadFinishingDropdowns();
             }
+        }
+        
+        function loadFinishingDropdowns() {
+            const container = document.getElementById('finishingDropdowns');
+            
+            // Group options by category
+            const grouped = {};
+            product.finishingOptions.forEach(opt => {
+                const category = opt.category || 'Other Options';
+                if (!grouped[category]) grouped[category] = [];
+                grouped[category].push(opt);
+            });
+            
+            container.innerHTML = Object.entries(grouped).map(([category, options]) => `
+                <div class="finishing-group">
+                    <label>${category}:</label>
+                    <select onchange="updateFinishing('${category}', this.value)">
+                        <option value="">-- Select ${category} --</option>
+                        ${options.map((opt, i) => `
+                            <option value="${category}_${i}" data-name="${opt.name}" data-price="${opt.price}" data-desc="${opt.description || ''}">
+                                ${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : '(No charge)'}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+            `).join('');
+        }
+        
+        window.updateFinishing = function(category, value) {
+            if (!value) {
+                delete selectedFinishing[category];
+            } else {
+                const select = event.target;
+                const option = select.options[select.selectedIndex];
+                selectedFinishing[category] = {
+                    name: option.dataset.name,
+                    price: parseFloat(option.dataset.price),
+                    description: option.dataset.desc
+                };
+            }
+            updateSelectedSummary();
+        };
+        
+        function updateSelectedSummary() {
+            const summary = document.getElementById('selectedSummary');
+            const list = document.getElementById('selectedList');
+            
+            if (Object.keys(selectedFinishing).length === 0) {
+                summary.style.display = 'none';
+                return;
+            }
+            
+            summary.style.display = 'block';
+            list.innerHTML = Object.values(selectedFinishing).map(opt => `
+                <div class="selected-item">
+                    <span><strong>${opt.name}</strong> ${opt.description ? `- ${opt.description}` : ''}</span>
+                    <span class="price-badge">${opt.price > 0 ? `+$${opt.price}` : 'Included'}</span>
+                </div>
+            `).join('');
         }
         
         window.requestQuote = function() {
             document.getElementById('quoteProductName').textContent = product.name;
             document.getElementById('quoteProductDetails').textContent = `Base: $${product.basePrice}/sq ft | Max: ${product.maxWidth || 'N/A'}" x ${product.maxHeight || 'N/A'}"`;
             
-            const fg = document.getElementById('finishingGroup'), fl = document.getElementById('quoteFinishingList');
-            if (product.finishingOptions && product.finishingOptions.length > 0) {
-                fg.style.display = 'block';
-                fl.innerHTML = product.finishingOptions.map(o => `
-                    <label style="display:block; margin:8px 0;">
-                        <input type="checkbox" name="finishing" value="${o.name}">
-                        ${o.name} ${o.price > 0 ? `(+$${o.price})` : ''} - ${o.description || ''}
-                    </label>
-                `).join('');
-            } else { fg.style.display = 'none'; }
+            const optionsContainer = document.getElementById('quoteSelectedOptions');
+            if (Object.keys(selectedFinishing).length > 0) {
+                optionsContainer.innerHTML = `
+                    <strong style="color:#1D3557;">Selected Finishing Options:</strong>
+                    <ul style="margin:5px 0 0 20px; color:#666;">
+                        ${Object.values(selectedFinishing).map(opt => `
+                            <li>${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : ''}</li>
+                        `).join('')}
+                    </ul>
+                `;
+            } else {
+                optionsContainer.innerHTML = '<p style="color:#666;"><em>No finishing options selected</em></p>';
+            }
+            
             document.getElementById('quoteModal').classList.add('show');
         };
         
         window.submitQuote = async function(e) {
             e.preventDefault();
-            const finishing = Array.from(document.querySelectorAll('input[name="finishing"]:checked')).map(c => c.value);
+            
+            const finishingText = Object.values(selectedFinishing).length > 0
+                ? Object.values(selectedFinishing).map(o => `${o.name} (+$${o.price})`).join(', ')
+                : 'None selected';
+            
             try {
                 await fetch('https://formsubmit.co/tcsignlab@gmail.com', {
                     method: 'POST',
@@ -228,7 +298,7 @@
                         Company: document.getElementById('quoteCompany').value || 'N/A',
                         Quantity: document.getElementById('quoteQuantity').value,
                         Size: document.getElementById('quoteSize').value || 'N/A',
-                        'Finishing': finishing.join(', ') || 'None',
+                        'Selected Finishing Options': finishingText,
                         Notes: document.getElementById('quoteNotes').value || 'None'
                     })
                 });
