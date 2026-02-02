@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TC SignLab - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #E63946;
+            --secondary: #1D3557;
+            --success: #28A745;
+            --border: #DEE2E6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F8F9FA;
+            color: #212529;
+        }
+        .header {
+            background: white;
+            border-bottom: 3px solid var(--primary);
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo img { height: 50px; }
+        .logo h1 { font-size: 1.8rem; color: var(--secondary); }
+        .logout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab:hover { background: #e9ecef; }
+        .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card h2 { margin-bottom: 20px; color: var(--secondary); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-group textarea { resize: vertical; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #d62828; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; color: white; }
+        
+        .image-preview {
+            margin-top: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+            border-radius: 4px;
+        }
+        .image-preview-placeholder {
+            padding: 40px;
+            text-align: center;
+            color: #6c757d;
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 4px;
+        }
+        
+        .finishing-option-card {
+            background: white;
+            border: 2px solid #0066cc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .finishing-option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        .finishing-category-badge {
+            background: #1D3557;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .finishing-price-badge {
+            background: #E63946;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .product-item {
+            border: 2px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: white;
+        }
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .product-title { font-size: 1.3rem; color: var(--secondary); font-weight: 700; }
+        .product-actions { display: flex; gap: 10px; }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .alert-success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        #productForm { display: none; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="tcsignlab.png" alt="TC SignLab" onerror="this.style.display='none'">
+            <h1>Admin Panel</h1>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <span id="statusIndicator" style="padding:8px 16px; border-radius:20px; background:#d4edda; color:#155724; font-weight:600;">
+                ● Connected
+            </span>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">📦 Products</button>
+            <button class="tab" onclick="switchTab('categories')">📁 Categories</button>
+            <button class="tab" onclick="switchTab('shipping')">🚚 Shipping</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+        
+        <!-- PRODUCTS TAB -->
+        <div id="productsTab" class="tab-content active">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2>Products Management</h2>
+                    <button class="btn btn-primary" onclick="showProductForm()">+ Add New Product</button>
+                </div>
+                
+                <!-- Product Form -->
+                <div id="productForm" class="card" style="background:#f8f9fa; display:none;">
+                    <h3 id="formTitle">Add New Product</h3>
+                    <form onsubmit="saveProduct(event)">
+                        <div class="form-group">
+                            <label>Product Name *</label>
+                            <input type="text" id="productName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select id="productCategory" required></select>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Base Price ($/sq ft) *</label>
+                                <input type="number" id="productPrice" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="productActive">
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="productDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Max Width (inches) *</label>
+                                <input type="number" id="productMaxWidth" value="200" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Height (inches) *</label>
+                                <input type="number" id="productMaxHeight" value="150" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Product Image URL</label>
+                            <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg" oninput="previewImage(this.value)">
+                            <div class="image-preview" id="imagePreview">
+                                <div class="image-preview-placeholder">📸 Image preview will appear here</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Finishing Options -->
+                        <div class="card" style="border:2px solid var(--primary); padding:20px; margin:20px 0;">
+                            <h3 style="color:var(--primary); margin-bottom:15px;">Finishing Options * (Required)</h3>
+                            <p style="color:#666; margin-bottom:15px;">Select finishing options from predefined categories</p>
+                            
+                            <div style="background:#fff3cd; padding:15px; border-radius:6px; margin-bottom:15px;">
+                                <div class="form-group" style="margin-bottom:10px;">
+                                    <label>Select Category:</label>
+                                    <select id="finishingCategory" onchange="loadFinishingOptionsForCategory()">
+                                        <option value="">-- Choose Category --</option>
+                                        <option value="Edges">Edges (Hemming, Sealing)</option>
+                                        <option value="Mounting">Mounting Hardware</option>
+                                        <option value="Reinforcement">Reinforcement Options</option>
+                                        <option value="Special">Special Services</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="finishingOptionSelectGroup" style="display:none; margin-bottom:10px;">
+                                    <label>Select Option:</label>
+                                    <select id="finishingOptionSelect">
+                                        <option value="">-- Choose Option --</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="button" onclick="addSelectedFinishing()" class="btn btn-success" style="width:100%;">
+                                    ✅ Add Selected Option
+                                </button>
+                            </div>
+                            
+                            <div id="selectedFinishingList">
+                                <p style="color:#999; text-align:center; font-style:italic;">No finishing options added yet</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex; gap:10px; margin-top:20px;">
+                            <button type="submit" id="productSubmitBtn" class="btn btn-primary" style="flex:1;">
+                                Save Product
+                            </button>
+                            <button type="button" onclick="cancelProductForm()" class="btn btn-secondary" style="flex:1;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="alertBox"></div>
+                <div id="productsList" class="loading">Loading products...</div>
+            </div>
+        </div>
+        
+        <!-- OTHER TABS (Categories, Shipping, Settings) -->
+        <div id="categoriesTab" class="tab-content">
+            <div class="card">
+                <h2>Categories Management</h2>
+                <form onsubmit="saveCategory(event)">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" id="categoryName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="categoryDescription" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                </form>
+                <div id="categoriesList" style="margin-top:20px;"></div>
+            </div>
+        </div>
+        
+        <div id="shippingTab" class="tab-content">
+            <div class="card">
+                <h2>Shipping Methods</h2>
+                <form onsubmit="saveShipping(event)">
+                    <div class="form-group">
+                        <label>Method Name</label>
+                        <input type="text" id="shippingName" required>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Price ($)</label>
+                            <input type="number" id="shippingPrice" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Time</label>
+                            <input type="text" id="shippingTime" placeholder="e.g., 5-7 days">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Shipping Method</button>
+                </form>
+                <div id="shippingList" style="margin-top:20px;"></div>
+            </div>
+        </div>
+        
+        <div id="settingsTab" class="tab-content">
+            <div class="card">
+                <h2>Business Settings</h2>
+                <form onsubmit="saveSettings(event)">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="businessName" value="TC SignLab">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="businessEmail" value="tcsignlab@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="businessPhone" value="866-419-7446">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="businessAddress" rows="2">Port Saint Lucie, FL 34984</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, set, update, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // PASSWORD PROTECTION - Check session
+        if (!sessionStorage.getItem('adminAuth')) {
+            window.location.href = './admin-login.html';
+        }
+        
+        console.log('Admin panel initializing...');
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        console.log('Firebase initialized');
+        
+        let currentEditId = null;
+        let categories = {};
+        let products = [];
+        let productFinishingOptions = [];
+        
+        // FINISHING CATEGORIES
+        const FINISHING_CATEGORIES = {
+            'Edges': [
+                {name: 'Hems & Grommets', price: 15, description: 'Hemmed edges with metal grommets every 2 feet'},
+                {name: 'Heat Sealed Edges', price: 12, description: 'Clean sealed edges, no hemming'},
+                {name: 'Sewn Edges', price: 10, description: 'Double-stitched edges for durability'},
+                {name: 'Raw Cut', price: 0, description: 'Unfinished edges (not recommended for outdoor)'}
+            ],
+            'Mounting': [
+                {name: 'Pole Pockets', price: 20, description: 'Top and bottom pole pockets for mounting'},
+                {name: 'Grommets Only', price: 8, description: 'Metal grommets without hemming'},
+                {name: 'Velcro Strips', price: 25, description: 'Industrial velcro for easy mounting'},
+                {name: 'No Mounting Hardware', price: 0, description: 'No mounting hardware included'}
+            ],
+            'Reinforcement': [
+                {name: 'Wind Slits', price: 10, description: 'Reinforced slits for wind resistance'},
+                {name: 'Corner Reinforcement', price: 15, description: 'Extra reinforcement on all four corners'},
+                {name: 'Rope & Grommets', price: 18, description: 'Includes nylon rope for hanging'},
+                {name: 'No Reinforcement', price: 0, description: 'Standard construction'}
+            ],
+            'Special': [
+                {name: 'Custom Size Cut', price: 30, description: 'Precise custom sizing'},
+                {name: 'Rush Production', price: 50, description: '24-hour turnaround'},
+                {name: 'Weather Coating', price: 35, description: 'Extra UV and weather protection'},
+                {name: 'None', price: 0, description: 'No special options'}
+            ]
+        };
+        
+        // Logout
+        window.logout = function() {
+            if (confirm('Logout from admin panel?')) {
+                sessionStorage.removeItem('adminAuth');
+                window.location.href = './admin-login.html';
+            }
+        };
+        
+        // Tab switching
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+        
+        // Alert
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            setTimeout(() => alertBox.style.display = 'none', 3000);
+        }
+        
+        // IMAGE PREVIEW
+        window.previewImage = function(url) {
+            const preview = document.getElementById('imagePreview');
+            if (!url || url.trim() === '') {
+                preview.innerHTML = '<div class="image-preview-placeholder">📸 Image preview will appear here</div>';
+                return;
+            }
+            
+            const img = new Image();
+            img.onload = function() {
+                preview.innerHTML = `<img src="${url}" alt="Product preview">`;
+            };
+            img.onerror = function() {
+                preview.innerHTML = '<div class="image-preview-placeholder" style="color:#e63946;">❌ Failed to load image. Check URL.</div>';
+            };
+            img.src = url;
+        };
+        
+        // FINISHING OPTIONS
+        window.loadFinishingOptionsForCategory = function() {
+            const category = document.getElementById('finishingCategory').value;
+            const selectGroup = document.getElementById('finishingOptionSelectGroup');
+            const optionSelect = document.getElementById('finishingOptionSelect');
+            
+            if (!category) {
+                selectGroup.style.display = 'none';
+                return;
+            }
+            
+            selectGroup.style.display = 'block';
+            const options = FINISHING_CATEGORIES[category];
+            
+            optionSelect.innerHTML = '<option value="">-- Choose Option --</option>' + 
+                options.map((opt, i) => 
+                    `<option value="${i}">${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : '(Free)'}</option>`
+                ).join('');
+        };
+        
+        window.addSelectedFinishing = function() {
+            const category = document.getElementById('finishingCategory').value;
+            const optionIndex = document.getElementById('finishingOptionSelect').value;
+            
+            if (!category || optionIndex === '') {
+                alert('⚠️ Please select both category and option!');
+                return;
+            }
+            
+            const option = FINISHING_CATEGORIES[category][parseInt(optionIndex)];
+            
+            const exists = productFinishingOptions.find(f => f.category === category && f.name === option.name);
+            if (exists) {
+                alert('⚠️ This option is already added!');
+                return;
+            }
+            
+            productFinishingOptions.push({
+                category: category,
+                name: option.name,
+                price: option.price,
+                description: option.description
+            });
+            
+            displaySelectedFinishing();
+            
+            document.getElementById('finishingCategory').value = '';
+            document.getElementById('finishingOptionSelectGroup').style.display = 'none';
+        };
+        
+        window.removeFinishingOption = function(index) {
+            productFinishingOptions.splice(index, 1);
+            displaySelectedFinishing();
+        };
+        
+        function displaySelectedFinishing() {
+            const container = document.getElementById('selectedFinishingList');
+            
+            if (productFinishingOptions.length === 0) {
+                container.innerHTML = '<p style="color:#999; text-align:center; font-style:italic;">No finishing options added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = productFinishingOptions.map((opt, i) => `
+                <div class="finishing-option-card">
+                    <div class="finishing-option-header">
+                        <div style="flex:1;">
+                            <div style="margin-bottom:8px;">
+                                <span class="finishing-category-badge">${opt.category}</span>
+                                <span class="finishing-price-badge">${opt.price > 0 ? `+$${opt.price}` : 'Included'}</span>
+                            </div>
+                            <div style="font-weight:700; color:#1D3557; margin-bottom:5px; font-size:1.1rem;">
+                                ${opt.name}
+                            </div>
+                            <div style="color:#666; font-size:0.9rem;">${opt.description}</div>
+                        </div>
+                        <button type="button" onclick="removeFinishingOption(${i})" class="remove-btn">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getFinishingOptions() {
+            return productFinishingOptions;
+        }
+        
+        // PRODUCT MANAGEMENT
+        window.showProductForm = function() {
+            document.getElementById('productForm').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Add New Product';
+            document.getElementById('productSubmitBtn').textContent = 'Save Product';
+            currentEditId = null;
+            productFinishingOptions = [];
+            displaySelectedFinishing();
+            previewImage('');
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        window.cancelProductForm = function() {
+            document.getElementById('productForm').style.display = 'none';
+            document.querySelector('#productForm form').reset();
+            currentEditId = null;
+            productFinishingOptions = [];
+            displaySelectedFinishing();
+            previewImage('');
+        };
+        
+        window.saveProduct = async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            const finishingOptions = getFinishingOptions();
+            const maxWidth = document.getElementById('productMaxWidth').value;
+            const maxHeight = document.getElementById('productMaxHeight').value;
+            
+            if (!name) { alert('⚠️ Product name is required!'); return; }
+            if (!category) { alert('⚠️ Please select a category!'); return; }
+            if (!price || price <= 0) { alert('⚠️ Please enter a valid base price!'); return; }
+            if (finishingOptions.length === 0) { alert('⚠️ Please add at least one finishing option!'); return; }
+            if (!maxWidth || maxWidth <= 0 || !maxHeight || maxHeight <= 0) { alert('⚠️ Please enter valid maximum dimensions!'); return; }
+            
+            const product = {
+                name,
+                category,
+                basePrice: parseFloat(price),
+                description: document.getElementById('productDescription').value,
+                finishingOptions,
+                maxWidth: parseInt(maxWidth),
+                maxHeight: parseInt(maxHeight),
+                imageUrl: document.getElementById('productImageUrl').value || '',
+                active: document.getElementById('productActive').value === 'true',
+                sortOrder: 0
+            };
+            
+            try {
+                if (currentEditId) {
+                    await update(ref(database, `products/${currentEditId}`), product);
+                    showAlert('✓ Product updated successfully!');
+                } else {
+                    await push(ref(database, 'products'), product);
+                    showAlert('✓ Product added successfully!');
+                }
+                
+                cancelProductForm();
+            } catch (error) {
+                console.error(error);
+                showAlert('❌ Error saving product: ' + error.message, 'error');
+            }
+        };
+        
+        window.editProduct = async function(productId) {
+            currentEditId = productId;
+            
+            const productRef = ref(database, `products/${productId}`);
+            const snapshot = await get(productRef);
+            const product = snapshot.val();
+            
+            if (!product) return;
+            
+            document.getElementById('productForm').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Edit Product';
+            document.getElementById('productSubmitBtn').textContent = 'Update Product';
+            
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productPrice').value = product.basePrice;
+            document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('productMaxWidth').value = product.maxWidth || 200;
+            document.getElementById('productMaxHeight').value = product.maxHeight || 150;
+            document.getElementById('productImageUrl').value = product.imageUrl || '';
+            document.getElementById('productActive').value = product.active ? 'true' : 'false';
+            
+            previewImage(product.imageUrl || '');
+            
+            productFinishingOptions = product.finishingOptions || [];
+            displaySelectedFinishing();
+            
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        window.deleteProduct = async function(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            try {
+                await remove(ref(database, `products/${productId}`));
+                showAlert('✓ Product deleted successfully!');
+            } catch (error) {
+                showAlert('❌ Error deleting product', 'error');
+            }
+        };
+        
+        function displayProducts() {
+            const container = document.getElementById('productsList');
+            
+            console.log('Displaying products:', products.length);
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="loading">No products yet. Click "Add New Product" to create one!</div>';
+                return;
+            }
+            
+            container.innerHTML = products.map(product => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div style="flex:1;">
+                            <div class="product-title">${product.name}</div>
+                            <p style="color:#666; margin:10px 0;">${product.description || 'No description'}</p>
+                            <div style="display:flex; gap:20px; flex-wrap:wrap; margin:10px 0;">
+                                <span><strong>Base Price:</strong> $${product.basePrice}/sq ft</span>
+                                <span><strong>Category:</strong> ${categories[product.category]?.name || 'N/A'}</span>
+                                <span><strong>Max:</strong> ${product.maxWidth || 'N/A'}"W x ${product.maxHeight || 'N/A'}"H</span>
+                                <span><strong>Status:</strong> ${product.active ? '✓ Active' : '✗ Inactive'}</span>
+                            </div>
+                            ${product.imageUrl ? `<img src="${product.imageUrl}" style="max-width:150px; margin:10px 0; border-radius:6px;" alt="${product.name}">` : ''}
+                            ${product.finishingOptions && product.finishingOptions.length > 0 ? `
+                                <div style="background:#f8f9fa; padding:10px; border-radius:6px; margin-top:10px;">
+                                    <strong>Finishing Options (${product.finishingOptions.length}):</strong>
+                                    <div style="margin-top:10px; display:grid; gap:8px;">
+                                        ${product.finishingOptions.map(opt => `
+                                            <div style="background:white; padding:8px; border-left:4px solid #0066cc; border-radius:4px;">
+                                                <strong>${opt.category}:</strong> ${opt.name} 
+                                                <span style="background:#e63946; color:white; padding:2px 6px; border-radius:3px; font-size:0.85rem; margin-left:8px;">
+                                                    ${opt.price > 0 ? `+$${opt.price}` : 'Free'}
+                                                </span>
+                                                <div style="color:#666; font-size:0.9rem; margin-top:4px;">${opt.description || ''}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : '<p style="color:#dc3545; margin-top:10px;">⚠️ No finishing options</p>'}
+                        </div>
+                        <div class="product-actions">
+                            <button onclick="editProduct('${product.id}')" class="btn btn-primary">Edit</button>
+                            <button onclick="deleteProduct('${product.id}')" class="btn" style="background:#dc3545; color:white;">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // CATEGORIES
+        window.saveCategory = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('categoryName').value;
+            const description = document.getElementById('categoryDescription').value;
+            
+            try {
+                await push(ref(database, 'categories'), { name, description, sortOrder: 0 });
+                showAlert('✓ Category added!');
+                e.target.reset();
+            } catch (error) {
+                showAlert('❌ Error adding category', 'error');
+            }
+        };
+        
+        window.deleteCategory = async function(catId) {
+            if (!confirm('Delete this category?')) return;
+            try {
+                await remove(ref(database, `categories/${catId}`));
+                showAlert('✓ Category deleted!');
+            } catch (error) {
+                showAlert('❌ Error deleting category', 'error');
+            }
+        };
+        
+        function displayCategories() {
+            const container = document.getElementById('categoriesList');
+            const catArray = Object.entries(categories).map(([id, cat]) => ({id, ...cat}));
+            
+            container.innerHTML = catArray.map(cat => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div>
+                            <strong>${cat.name}</strong>
+                            <p style="color:#666; margin-top:5px;">${cat.description || ''}</p>
+                        </div>
+                        <button onclick="deleteCategory('${cat.id}')" class="btn" style="background:#dc3545; color:white;">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // SHIPPING
+        window.saveShipping = async function(e) {
+            e.preventDefault();
+            const shipping = {
+                name: document.getElementById('shippingName').value,
+                price: parseFloat(document.getElementById('shippingPrice').value),
+                deliveryTime: document.getElementById('shippingTime').value
+            };
+            
+            try {
+                await push(ref(database, 'shipping'), shipping);
+                showAlert('✓ Shipping method added!');
+                e.target.reset();
+            } catch (error) {
+                showAlert('❌ Error adding shipping', 'error');
+            }
+        };
+        
+        window.deleteShipping = async function(shipId) {
+            if (!confirm('Delete this shipping method?')) return;
+            try {
+                await remove(ref(database, `shipping/${shipId}`));
+                showAlert('✓ Shipping method deleted!');
+            } catch (error) {
+                showAlert('❌ Error', 'error');
+            }
+        };
+        
+        function displayShipping(shippingData) {
+            const container = document.getElementById('shippingList');
+            const shipArray = Object.entries(shippingData).map(([id, ship]) => ({id, ...ship}));
+            
+            container.innerHTML = shipArray.map(ship => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div>
+                            <strong>${ship.name}</strong> - $${ship.price}
+                            <p style="color:#666; margin-top:5px;">${ship.deliveryTime || ''}</p>
+                        </div>
+                        <button onclick="deleteShipping('${ship.id}')" class="btn" style="background:#dc3545; color:white;">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // SETTINGS
+        window.saveSettings = async function(e) {
+            e.preventDefault();
+            const settings = {
+                businessName: document.getElementById('businessName').value,
+                email: document.getElementById('businessEmail').value,
+                phone: document.getElementById('businessPhone').value,
+                address: document.getElementById('businessAddress').value
+            };
+            
+            try {
+                await set(ref(database, 'settings'), settings);
+                showAlert('✓ Settings saved!');
+            } catch (error) {
+                showAlert('❌ Error saving settings', 'error');
+            }
+        };
+        
+        // LOAD DATA
+        console.log('Setting up Firebase listeners...');
+        
+        onValue(ref(database, 'categories'), (snapshot) => {
+            console.log('Categories loaded:', snapshot.val());
+            categories = snapshot.val() || {};
+            const select = document.getElementById('productCategory');
+            select.innerHTML = '<option value="">Select Category</option>' + 
+                Object.entries(categories).map(([id, cat]) => `<option value="${id}">${cat.name}</option>`).join('');
+            displayCategories();
+        });
+        
+        onValue(ref(database, 'products'), (snapshot) => {
+            console.log('Products snapshot received:', snapshot.val());
+            const data = snapshot.val() || {};
+            products = Object.entries(data).map(([id, product]) => ({id, ...product}));
+            console.log('Products array:', products);
+            displayProducts();
+        });
+        
+        onValue(ref(database, 'shipping'), (snapshot) => {
+            const data = snapshot.val() || {};
+            if (Object.keys(data).length > 0) {
+                displayShipping(data);
+            }
+        });
+        
+        onValue(ref(database, 'settings'), (snapshot) => {
+            const settings = snapshot.val();
+            if (settings) {
+                document.getElementById('businessName').value = settings.businessName || '';
+                document.getElementById('businessEmail').value = settings.email || '';
+                document.getElementById('businessPhone').value = settings.phone || '';
+                document.getElementById('businessAddress').value = settings.address || '';
+            }
+        });
+        
+        console.log('Admin panel ready!');
+    </script>
+</body>
+</html>
