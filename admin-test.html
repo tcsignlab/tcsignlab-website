@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TC SignLab - Admin Panel (Test)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .debug { background: #fff; border: 2px solid #0066cc; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .debug h3 { color: #0066cc; margin-bottom: 10px; }
+        .debug pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .product-item { background: white; padding: 15px; margin: 10px 0; border-radius: 6px; border: 2px solid #dee2e6; }
+        .btn { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Admin Panel - Debug Mode</h1>
+    
+    <div class="debug">
+        <h3>Connection Status:</h3>
+        <div id="connectionStatus">Checking Firebase connection...</div>
+    </div>
+    
+    <div class="debug">
+        <h3>Categories:</h3>
+        <div id="categoriesDebug">Loading...</div>
+    </div>
+    
+    <div class="debug">
+        <h3>Products:</h3>
+        <div id="productsDebug">Loading...</div>
+    </div>
+    
+    <div>
+        <h3>Add Test Product:</h3>
+        <button class="btn" onclick="addTestProduct()">Add Test Product</button>
+        <button class="btn" onclick="loadData()">Reload Data</button>
+    </div>
+    
+    <div id="productsList"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        console.log('Script loading...');
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        };
+        
+        console.log('Initializing Firebase...');
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        console.log('Firebase initialized!');
+        
+        document.getElementById('connectionStatus').innerHTML = '✅ Firebase connected successfully!';
+        
+        let categories = {};
+        let products = [];
+        
+        // Load categories
+        console.log('Loading categories...');
+        onValue(ref(database, 'categories'), (snapshot) => {
+            console.log('Categories snapshot received:', snapshot.val());
+            categories = snapshot.val() || {};
+            const count = Object.keys(categories).length;
+            document.getElementById('categoriesDebug').innerHTML = `
+                Found ${count} categories<br>
+                <pre>${JSON.stringify(categories, null, 2)}</pre>
+            `;
+        }, (error) => {
+            console.error('Categories error:', error);
+            document.getElementById('categoriesDebug').innerHTML = '❌ Error: ' + error.message;
+        });
+        
+        // Load products
+        console.log('Loading products...');
+        onValue(ref(database, 'products'), (snapshot) => {
+            console.log('Products snapshot received:', snapshot.val());
+            const data = snapshot.val() || {};
+            products = Object.entries(data).map(([id, product]) => ({id, ...product}));
+            
+            const count = products.length;
+            document.getElementById('productsDebug').innerHTML = `
+                Found ${count} products<br>
+                <pre>${JSON.stringify(products, null, 2)}</pre>
+            `;
+            
+            displayProducts();
+        }, (error) => {
+            console.error('Products error:', error);
+            document.getElementById('productsDebug').innerHTML = '❌ Error: ' + error.message;
+        });
+        
+        function displayProducts() {
+            const container = document.getElementById('productsList');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="product-item">No products found in database.</div>';
+                return;
+            }
+            
+            container.innerHTML = '<h3>Products List:</h3>' + products.map(product => `
+                <div class="product-item">
+                    <h4>${product.name}</h4>
+                    <p>Price: $${product.basePrice}/sq ft</p>
+                    <p>Category: ${categories[product.category]?.name || 'Unknown'}</p>
+                    <p>Max: ${product.maxWidth || 'N/A'}" x ${product.maxHeight || 'N/A'}"</p>
+                    <p>Finishing Options: ${product.finishingOptions?.length || 0}</p>
+                    ${product.imageUrl ? `<img src="${product.imageUrl}" style="max-width:150px; margin:10px 0;">` : ''}
+                </div>
+            `).join('');
+        }
+        
+        window.addTestProduct = async function() {
+            console.log('Adding test product...');
+            const testProduct = {
+                name: "Test Product " + Date.now(),
+                basePrice: 1.99,
+                description: "Test description",
+                category: Object.keys(categories)[0] || 'test',
+                maxWidth: 200,
+                maxHeight: 150,
+                finishingOptions: [
+                    {category: 'Edges', name: 'Hems & Grommets', price: 15, description: 'Test option'}
+                ],
+                active: true,
+                sortOrder: 0
+            };
+            
+            try {
+                const result = await push(ref(database, 'products'), testProduct);
+                console.log('Test product added:', result.key);
+                alert('✅ Test product added! Key: ' + result.key);
+            } catch (error) {
+                console.error('Error adding test product:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        };
+        
+        window.loadData = function() {
+            location.reload();
+        };
+        
+        console.log('Script loaded successfully!');
+    </script>
+</body>
+</html>
