@@ -11,7 +11,7 @@
         .header h1 { font-size: 1.5rem; }
         .logout { background: #E63946; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
         .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; flex-wrap: wrap; }
         .tab { padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
         .tab.active { background: #0066cc; color: white; }
         .tab-content { display: none; }
@@ -25,11 +25,12 @@
         .btn-success { background: #28a745; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
+        .btn-warning { background: #ffc107; color: #000; }
         .product-list { margin-top: 20px; }
         .product-card { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #dee2e6; }
         .product-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
         .product-title { font-size: 1.2rem; font-weight: 700; color: #1D3557; }
-        .product-actions { display: flex; gap: 10px; }
+        .product-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .finish-option { background: white; border: 2px solid #0066cc; padding: 12px; border-radius: 5px; margin-bottom: 10px; }
         .finish-header { display: flex; justify-content: space-between; align-items: center; }
@@ -42,6 +43,10 @@
         .alert-success { background: #d4edda; color: #155724; }
         .alert-error { background: #f8d7da; color: #721c24; }
         #productForm { display: none; }
+        .option-item { background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #0066cc; }
+        .option-header { display: flex; justify-content: space-between; align-items: center; }
+        .category-card { background: white; border: 2px solid #0066cc; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .category-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -53,7 +58,8 @@
     <div class="container">
         <div class="tabs">
             <button class="tab active" onclick="openTab('products')">Products</button>
-            <button class="tab" onclick="openTab('categories')">Categories</button>
+            <button class="tab" onclick="openTab('categories')">Product Categories</button>
+            <button class="tab" onclick="openTab('finishing')">Finishing Options</button>
             <button class="tab" onclick="openTab('settings')">Settings</button>
         </div>
 
@@ -121,17 +127,13 @@
 
                         <!-- FINISHING OPTIONS -->
                         <div style="background:#fff3cd; padding:20px; border-radius:8px; margin:20px 0;">
-                            <h4 style="margin-bottom:15px;">Finishing Options *</h4>
+                            <h4 style="margin-bottom:15px;">Select Finishing Options * (Select as many as needed)</h4>
                             
                             <div class="form-grid" style="margin-bottom:15px;">
                                 <div class="form-group">
                                     <label>Category</label>
                                     <select id="fCategory" onchange="loadFinishOptions()">
                                         <option value="">Select Category</option>
-                                        <option value="Edges">Edges</option>
-                                        <option value="Mounting">Mounting</option>
-                                        <option value="Reinforcement">Reinforcement</option>
-                                        <option value="Special">Special</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -143,7 +145,7 @@
                             </div>
                             
                             <button type="button" class="btn btn-success" onclick="addFinishOption()" style="width:100%;">
-                                Add Finishing Option
+                                ➕ Add This Finishing Option
                             </button>
 
                             <div id="finishList" style="margin-top:15px;"></div>
@@ -164,7 +166,7 @@
         <!-- CATEGORIES TAB -->
         <div id="categoriesTab" class="tab-content">
             <div class="card">
-                <h2>Manage Categories</h2>
+                <h2>Manage Product Categories</h2>
                 <form onsubmit="saveCategory(event)" style="margin:20px 0;">
                     <div class="form-group">
                         <label>Category Name</label>
@@ -177,6 +179,29 @@
                     <button type="submit" class="btn btn-primary">Add Category</button>
                 </form>
                 <div id="categoriesList"></div>
+            </div>
+        </div>
+
+        <!-- FINISHING OPTIONS TAB -->
+        <div id="finishingTab" class="tab-content">
+            <div class="card">
+                <h2>Manage Finishing Options</h2>
+                <p style="color:#666; margin-bottom:20px;">Create categories and options that customers can choose from</p>
+                
+                <!-- Add New Category -->
+                <div style="background:#e7f3ff; padding:20px; border-radius:8px; margin-bottom:30px;">
+                    <h3 style="margin-bottom:15px;">Add New Finishing Category</h3>
+                    <form onsubmit="saveFinishCategory(event)">
+                        <div class="form-group">
+                            <label>Category Name (e.g., "Edges", "Mounting")</label>
+                            <input type="text" id="finishCatName" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Create Category</button>
+                    </form>
+                </div>
+
+                <!-- Existing Categories with Options -->
+                <div id="finishCategoriesList"></div>
             </div>
         </div>
 
@@ -226,35 +251,60 @@
         
         let categories = {};
         let products = {};
+        let finishCategories = {};
         let editingId = null;
-        let finishingOptions = [];
+        let selectedFinishing = [];
 
-        const FINISH_OPTIONS = {
-            Edges: [
-                {name: 'Hems & Grommets', price: 15, desc: 'Hemmed edges with grommets'},
-                {name: 'Heat Sealed', price: 12, desc: 'Clean sealed edges'},
-                {name: 'Sewn Edges', price: 10, desc: 'Double-stitched edges'},
-                {name: 'Raw Cut', price: 0, desc: 'Unfinished edges'}
-            ],
-            Mounting: [
-                {name: 'Pole Pockets', price: 20, desc: 'Top/bottom pockets'},
-                {name: 'Grommets Only', price: 8, desc: 'Metal grommets'},
-                {name: 'Velcro Strips', price: 25, desc: 'Industrial velcro'},
-                {name: 'No Hardware', price: 0, desc: 'None included'}
-            ],
-            Reinforcement: [
-                {name: 'Wind Slits', price: 10, desc: 'Wind resistant'},
-                {name: 'Corner Reinforcement', price: 15, desc: 'Extra corners'},
-                {name: 'Rope & Grommets', price: 18, desc: 'Includes rope'},
-                {name: 'Standard', price: 0, desc: 'No extra'}
-            ],
-            Special: [
-                {name: 'Custom Size', price: 30, desc: 'Precise cutting'},
-                {name: 'Rush Production', price: 50, desc: '24hr turnaround'},
-                {name: 'Weather Coating', price: 35, desc: 'UV protection'},
-                {name: 'None', price: 0, desc: 'No special'}
-            ]
+        // Initialize default finishing categories if not exist
+        const initDefaults = async () => {
+            const snap = await new Promise(resolve => {
+                onValue(ref(db, 'finishingCategories'), s => resolve(s), {onlyOnce: true});
+            });
+            
+            if (!snap.val()) {
+                const defaults = {
+                    'Edges': {
+                        name: 'Edges',
+                        options: {
+                            'opt1': {name: 'Hems & Grommets', price: 15, description: 'Hemmed edges with grommets'},
+                            'opt2': {name: 'Heat Sealed', price: 12, description: 'Clean sealed edges'},
+                            'opt3': {name: 'Sewn Edges', price: 10, description: 'Double-stitched edges'},
+                            'opt4': {name: 'Raw Cut', price: 0, description: 'Unfinished edges'}
+                        }
+                    },
+                    'Mounting': {
+                        name: 'Mounting',
+                        options: {
+                            'opt1': {name: 'Pole Pockets', price: 20, description: 'Top/bottom pockets'},
+                            'opt2': {name: 'Grommets Only', price: 8, description: 'Metal grommets'},
+                            'opt3': {name: 'Velcro Strips', price: 25, description: 'Industrial velcro'},
+                            'opt4': {name: 'No Hardware', price: 0, description: 'None included'}
+                        }
+                    },
+                    'Reinforcement': {
+                        name: 'Reinforcement',
+                        options: {
+                            'opt1': {name: 'Wind Slits', price: 10, description: 'Wind resistant'},
+                            'opt2': {name: 'Corner Reinforcement', price: 15, description: 'Extra corners'},
+                            'opt3': {name: 'Rope & Grommets', price: 18, description: 'Includes rope'},
+                            'opt4': {name: 'Standard', price: 0, description: 'No extra'}
+                        }
+                    },
+                    'Special': {
+                        name: 'Special',
+                        options: {
+                            'opt1': {name: 'Custom Size', price: 30, description: 'Precise cutting'},
+                            'opt2': {name: 'Rush Production', price: 50, description: '24hr turnaround'},
+                            'opt3': {name: 'Weather Coating', price: 35, description: 'UV protection'},
+                            'opt4': {name: 'None', price: 0, description: 'No special'}
+                        }
+                    }
+                };
+                await set(ref(db, 'finishingCategories'), defaults);
+            }
         };
+
+        initDefaults();
 
         // Load categories
         onValue(ref(db, 'categories'), (snap) => {
@@ -269,10 +319,25 @@
             displayProducts();
         });
 
+        // Load finishing categories
+        onValue(ref(db, 'finishingCategories'), (snap) => {
+            finishCategories = snap.val() || {};
+            updateFinishCategorySelect();
+            displayFinishCategories();
+        });
+
         function updateCategorySelect() {
             const sel = document.getElementById('pCategory');
             sel.innerHTML = '<option value="">Select Category</option>' +
                 Object.entries(categories).map(([id, c]) => 
+                    `<option value="${id}">${c.name}</option>`
+                ).join('');
+        }
+
+        function updateFinishCategorySelect() {
+            const sel = document.getElementById('fCategory');
+            sel.innerHTML = '<option value="">Select Category</option>' +
+                Object.entries(finishCategories).map(([id, c]) => 
                     `<option value="${id}">${c.name}</option>`
                 ).join('');
         }
@@ -301,7 +366,7 @@
                             ${p.imageUrl ? `<img src="${p.imageUrl}" style="max-width:150px; border-radius:5px; margin:10px 0;">` : ''}
                             ${p.finishingOptions?.length ? `
                                 <div style="background:#f0f0f0; padding:10px; border-radius:5px; margin-top:10px;">
-                                    <strong>Finishing (${p.finishingOptions.length}):</strong>
+                                    <strong>Finishing Options (${p.finishingOptions.length}):</strong>
                                     ${p.finishingOptions.map(f => `
                                         <div style="margin:5px 0;">
                                             <span class="badge badge-category">${f.category}</span>
@@ -338,6 +403,62 @@
             `).join('');
         }
 
+        function displayFinishCategories() {
+            const list = document.getElementById('finishCategoriesList');
+            const cArray = Object.entries(finishCategories).map(([id, c]) => ({id, ...c}));
+            
+            if (cArray.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No finishing categories yet.</p>';
+                return;
+            }
+
+            list.innerHTML = cArray.map(cat => `
+                <div class="category-card">
+                    <div class="category-header">
+                        <h3>${cat.name}</h3>
+                        <button class="btn btn-danger" onclick="deleteFinishCategory('${cat.id}')">Delete Category</button>
+                    </div>
+
+                    <!-- Add Option to Category -->
+                    <form onsubmit="addOptionToCategory(event, '${cat.id}')" style="background:#f8f9fa; padding:15px; border-radius:5px; margin-bottom:15px;">
+                        <h4 style="margin-bottom:10px;">Add Option to ${cat.name}</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Option Name</label>
+                                <input type="text" id="optName_${cat.id}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Price ($)</label>
+                                <input type="number" id="optPrice_${cat.id}" step="0.01" value="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" id="optDesc_${cat.id}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Option</button>
+                    </form>
+
+                    <!-- Options List -->
+                    <div>
+                        <strong>Options in this category:</strong>
+                        ${Object.entries(cat.options || {}).map(([optId, opt]) => `
+                            <div class="option-item">
+                                <div class="option-header">
+                                    <div>
+                                        <strong>${opt.name}</strong>
+                                        <span class="badge badge-price">$${opt.price}</span>
+                                        <div style="color:#666; font-size:0.9rem; margin-top:5px;">${opt.description || ''}</div>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="deleteFinishOption('${cat.id}', '${optId}')" style="padding:6px 12px;">Delete</button>
+                                </div>
+                            </div>
+                        `).join('') || '<p style="color:#999; margin:10px 0;">No options yet</p>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
         window.openTab = function(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -349,7 +470,7 @@
             document.getElementById('productForm').style.display = 'block';
             document.getElementById('formTitle').textContent = 'Add New Product';
             editingId = null;
-            finishingOptions = [];
+            selectedFinishing = [];
             updateFinishList();
             document.getElementById('productForm').scrollIntoView({behavior: 'smooth'});
         };
@@ -358,7 +479,7 @@
             document.getElementById('productForm').style.display = 'none';
             document.querySelector('#productForm form').reset();
             editingId = null;
-            finishingOptions = [];
+            selectedFinishing = [];
             updateFinishList();
             document.getElementById('imgPreview').innerHTML = '';
         };
@@ -374,44 +495,51 @@
         };
 
         window.loadFinishOptions = function() {
-            const cat = document.getElementById('fCategory').value;
+            const catId = document.getElementById('fCategory').value;
             const sel = document.getElementById('fOption');
             
-            if (!cat) {
+            if (!catId) {
                 sel.disabled = true;
                 sel.innerHTML = '<option value="">Choose category first</option>';
                 return;
             }
 
+            const cat = finishCategories[catId];
+            const options = cat?.options || {};
+
             sel.disabled = false;
             sel.innerHTML = '<option value="">Select option</option>' +
-                FINISH_OPTIONS[cat].map((opt, i) => 
-                    `<option value="${i}">${opt.name} (+$${opt.price})</option>`
+                Object.entries(options).map(([optId, opt]) => 
+                    `<option value="${optId}">${opt.name} (+$${opt.price})</option>`
                 ).join('');
         };
 
         window.addFinishOption = function() {
-            const cat = document.getElementById('fCategory').value;
-            const optIdx = document.getElementById('fOption').value;
+            const catId = document.getElementById('fCategory').value;
+            const optId = document.getElementById('fOption').value;
 
-            if (!cat || optIdx === '') {
+            if (!catId || !optId) {
                 alert('Please select category and option');
                 return;
             }
 
-            const opt = FINISH_OPTIONS[cat][optIdx];
-            const exists = finishingOptions.find(f => f.category === cat && f.name === opt.name);
-            
+            const cat = finishCategories[catId];
+            const opt = cat.options[optId];
+
+            // Check if already added
+            const exists = selectedFinishing.find(f => f.categoryId === catId && f.optionId === optId);
             if (exists) {
                 alert('This option is already added');
                 return;
             }
 
-            finishingOptions.push({
-                category: cat,
+            selectedFinishing.push({
+                categoryId: catId,
+                optionId: optId,
+                category: cat.name,
                 name: opt.name,
                 price: opt.price,
-                description: opt.desc
+                description: opt.description
             });
 
             updateFinishList();
@@ -421,19 +549,23 @@
         };
 
         window.removeFinish = function(idx) {
-            finishingOptions.splice(idx, 1);
+            selectedFinishing.splice(idx, 1);
             updateFinishList();
         };
 
         function updateFinishList() {
             const list = document.getElementById('finishList');
             
-            if (finishingOptions.length === 0) {
-                list.innerHTML = '<p style="color:#999; text-align:center; margin-top:10px;">No options added</p>';
+            if (selectedFinishing.length === 0) {
+                list.innerHTML = '<p style="color:#999; text-align:center; margin-top:10px;">No options selected yet (you can add multiple)</p>';
                 return;
             }
 
-            list.innerHTML = finishingOptions.map((f, i) => `
+            list.innerHTML = `
+                <div style="background:#d4edda; padding:10px; border-radius:5px; margin-bottom:10px;">
+                    <strong style="color:#155724;">✓ ${selectedFinishing.length} option(s) selected</strong>
+                </div>
+            ` + selectedFinishing.map((f, i) => `
                 <div class="finish-option">
                     <div class="finish-header">
                         <div>
@@ -460,8 +592,8 @@
                 return;
             }
 
-            if (finishingOptions.length === 0) {
-                alert('Please add at least one finishing option');
+            if (selectedFinishing.length === 0) {
+                alert('Please select at least one finishing option');
                 return;
             }
 
@@ -474,7 +606,7 @@
                 maxHeight: parseInt(document.getElementById('pMaxHeight').value),
                 imageUrl: document.getElementById('pImage').value,
                 active: document.getElementById('pActive').value === 'true',
-                finishingOptions,
+                finishingOptions: selectedFinishing,
                 sortOrder: 0
             };
 
@@ -507,7 +639,7 @@
             document.getElementById('pImage').value = p.imageUrl || '';
             document.getElementById('pActive').value = p.active ? 'true' : 'false';
             
-            finishingOptions = p.finishingOptions || [];
+            selectedFinishing = p.finishingOptions || [];
             updateFinishList();
             previewImg();
             
@@ -548,6 +680,63 @@
             }
         };
 
+        // FINISHING OPTIONS MANAGEMENT
+        window.saveFinishCategory = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('finishCatName').value;
+
+            try {
+                await push(ref(db, 'finishingCategories'), {
+                    name,
+                    options: {}
+                });
+                showAlert('Finishing category created!', 'success');
+                e.target.reset();
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.deleteFinishCategory = async function(catId) {
+            if (!confirm('Delete this finishing category and all its options?')) return;
+            try {
+                await remove(ref(db, `finishingCategories/${catId}`));
+                showAlert('Category deleted', 'success');
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.addOptionToCategory = async function(e, catId) {
+            e.preventDefault();
+            
+            const name = document.getElementById(`optName_${catId}`).value;
+            const price = parseFloat(document.getElementById(`optPrice_${catId}`).value);
+            const desc = document.getElementById(`optDesc_${catId}`).value;
+
+            try {
+                await push(ref(db, `finishingCategories/${catId}/options`), {
+                    name,
+                    price,
+                    description: desc
+                });
+                showAlert('Option added!', 'success');
+                e.target.reset();
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.deleteFinishOption = async function(catId, optId) {
+            if (!confirm('Delete this option?')) return;
+            try {
+                await remove(ref(db, `finishingCategories/${catId}/options/${optId}`));
+                showAlert('Option deleted', 'success');
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
         window.saveSettings = async function(e) {
             e.preventDefault();
             const settings = {
@@ -575,7 +764,8 @@
             const box = document.getElementById('alertBox');
             box.className = `alert alert-${type}`;
             box.textContent = msg;
-            setTimeout(() => box.className = 'alert', 3000);
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 3000);
         }
     </script>
 </body>
