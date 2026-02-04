@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TC SignLab Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f5; }
+        .header { background: #1D3557; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .logout { background: #E63946; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; }
+        .tab { padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .tab.active { background: #0066cc; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .product-list { margin-top: 20px; }
+        .product-card { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #dee2e6; }
+        .product-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+        .product-title { font-size: 1.2rem; font-weight: 700; color: #1D3557; }
+        .product-actions { display: flex; gap: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .finish-option { background: white; border: 2px solid #0066cc; padding: 12px; border-radius: 5px; margin-bottom: 10px; }
+        .finish-header { display: flex; justify-content: space-between; align-items: center; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+        .badge-category { background: #1D3557; color: white; }
+        .badge-price { background: #E63946; color: white; margin-left: 8px; }
+        .image-preview { margin-top: 10px; max-width: 300px; }
+        .image-preview img { width: 100%; border-radius: 5px; }
+        .alert { padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        #productForm { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏢 TC SignLab - Admin Panel</h1>
+        <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('products')">Products</button>
+            <button class="tab" onclick="openTab('categories')">Categories</button>
+            <button class="tab" onclick="openTab('settings')">Settings</button>
+        </div>
+
+        <!-- PRODUCTS TAB -->
+        <div id="productsTab" class="tab-content active">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <h2>Manage Products</h2>
+                    <button class="btn btn-primary" onclick="showAddProduct()">+ Add Product</button>
+                </div>
+
+                <div id="alertBox"></div>
+
+                <!-- ADD/EDIT PRODUCT FORM -->
+                <div id="productForm">
+                    <h3 id="formTitle">Add New Product</h3>
+                    <form onsubmit="saveProduct(event)">
+                        <div class="form-group">
+                            <label>Product Name *</label>
+                            <input type="text" id="pName" required>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Category *</label>
+                                <select id="pCategory" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Base Price ($/sq ft) *</label>
+                                <input type="number" id="pPrice" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="pDescription" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Max Width (inches) *</label>
+                                <input type="number" id="pMaxWidth" value="200" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Height (inches) *</label>
+                                <input type="number" id="pMaxHeight" value="150" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="url" id="pImage" placeholder="https://example.com/image.jpg" onchange="previewImg()">
+                            <div id="imgPreview" class="image-preview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="pActive">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+
+                        <!-- FINISHING OPTIONS -->
+                        <div style="background:#fff3cd; padding:20px; border-radius:8px; margin:20px 0;">
+                            <h4 style="margin-bottom:15px;">Finishing Options *</h4>
+                            
+                            <div class="form-grid" style="margin-bottom:15px;">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select id="fCategory" onchange="loadFinishOptions()">
+                                        <option value="">Select Category</option>
+                                        <option value="Edges">Edges</option>
+                                        <option value="Mounting">Mounting</option>
+                                        <option value="Reinforcement">Reinforcement</option>
+                                        <option value="Special">Special</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Option</label>
+                                    <select id="fOption" disabled>
+                                        <option value="">Choose category first</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-success" onclick="addFinishOption()" style="width:100%;">
+                                Add Finishing Option
+                            </button>
+
+                            <div id="finishList" style="margin-top:15px;"></div>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Product</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelForm()" style="flex:1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PRODUCTS LIST -->
+                <div id="productsList" class="product-list"></div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="categoriesTab" class="tab-content">
+            <div class="card">
+                <h2>Manage Categories</h2>
+                <form onsubmit="saveCategory(event)" style="margin:20px 0;">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" id="catName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="catDesc">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                </form>
+                <div id="categoriesList"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="settingsTab" class="tab-content">
+            <div class="card">
+                <h2>Business Settings</h2>
+                <form onsubmit="saveSettings(event)">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="bizName" value="TC SignLab">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="bizEmail" value="tcsignlab@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="bizPhone" value="866-419-7446">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, set, update, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Password check
+        if (!sessionStorage.getItem('adminAuth')) {
+            window.location.href = './admin-login.html';
+        }
+
+        const app = initializeApp({
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        });
+
+        const db = getDatabase(app);
+        
+        let categories = {};
+        let products = {};
+        let editingId = null;
+        let finishingOptions = [];
+
+        const FINISH_OPTIONS = {
+            Edges: [
+                {name: 'Hems & Grommets', price: 15, desc: 'Hemmed edges with grommets'},
+                {name: 'Heat Sealed', price: 12, desc: 'Clean sealed edges'},
+                {name: 'Sewn Edges', price: 10, desc: 'Double-stitched edges'},
+                {name: 'Raw Cut', price: 0, desc: 'Unfinished edges'}
+            ],
+            Mounting: [
+                {name: 'Pole Pockets', price: 20, desc: 'Top/bottom pockets'},
+                {name: 'Grommets Only', price: 8, desc: 'Metal grommets'},
+                {name: 'Velcro Strips', price: 25, desc: 'Industrial velcro'},
+                {name: 'No Hardware', price: 0, desc: 'None included'}
+            ],
+            Reinforcement: [
+                {name: 'Wind Slits', price: 10, desc: 'Wind resistant'},
+                {name: 'Corner Reinforcement', price: 15, desc: 'Extra corners'},
+                {name: 'Rope & Grommets', price: 18, desc: 'Includes rope'},
+                {name: 'Standard', price: 0, desc: 'No extra'}
+            ],
+            Special: [
+                {name: 'Custom Size', price: 30, desc: 'Precise cutting'},
+                {name: 'Rush Production', price: 50, desc: '24hr turnaround'},
+                {name: 'Weather Coating', price: 35, desc: 'UV protection'},
+                {name: 'None', price: 0, desc: 'No special'}
+            ]
+        };
+
+        // Load categories
+        onValue(ref(db, 'categories'), (snap) => {
+            categories = snap.val() || {};
+            updateCategorySelect();
+            displayCategories();
+        });
+
+        // Load products
+        onValue(ref(db, 'products'), (snap) => {
+            products = snap.val() || {};
+            displayProducts();
+        });
+
+        function updateCategorySelect() {
+            const sel = document.getElementById('pCategory');
+            sel.innerHTML = '<option value="">Select Category</option>' +
+                Object.entries(categories).map(([id, c]) => 
+                    `<option value="${id}">${c.name}</option>`
+                ).join('');
+        }
+
+        function displayProducts() {
+            const list = document.getElementById('productsList');
+            const pArray = Object.entries(products).map(([id, p]) => ({id, ...p}));
+            
+            if (pArray.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999; padding:40px;">No products yet. Click "Add Product" to create one.</p>';
+                return;
+            }
+
+            list.innerHTML = pArray.map(p => `
+                <div class="product-card">
+                    <div class="product-header">
+                        <div style="flex:1;">
+                            <div class="product-title">${p.name}</div>
+                            <p style="color:#666; margin:5px 0;">${p.description || ''}</p>
+                            <div style="margin:10px 0;">
+                                <strong>$${p.basePrice}/sq ft</strong> • 
+                                ${categories[p.category]?.name || 'N/A'} • 
+                                ${p.maxWidth}"W x ${p.maxHeight}"H • 
+                                ${p.active ? '✓ Active' : '✗ Inactive'}
+                            </div>
+                            ${p.imageUrl ? `<img src="${p.imageUrl}" style="max-width:150px; border-radius:5px; margin:10px 0;">` : ''}
+                            ${p.finishingOptions?.length ? `
+                                <div style="background:#f0f0f0; padding:10px; border-radius:5px; margin-top:10px;">
+                                    <strong>Finishing (${p.finishingOptions.length}):</strong>
+                                    ${p.finishingOptions.map(f => `
+                                        <div style="margin:5px 0;">
+                                            <span class="badge badge-category">${f.category}</span>
+                                            ${f.name}
+                                            <span class="badge badge-price">+$${f.price}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : '<p style="color:#dc3545;">⚠️ No finishing options</p>'}
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-primary" onclick="editProduct('${p.id}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayCategories() {
+            const list = document.getElementById('categoriesList');
+            const cArray = Object.entries(categories).map(([id, c]) => ({id, ...c}));
+            
+            list.innerHTML = cArray.map(c => `
+                <div class="product-card">
+                    <div class="product-header">
+                        <div>
+                            <strong>${c.name}</strong>
+                            <p style="color:#666;">${c.description || ''}</p>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteCategory('${c.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openTab = function(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        };
+
+        window.showAddProduct = function() {
+            document.getElementById('productForm').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Add New Product';
+            editingId = null;
+            finishingOptions = [];
+            updateFinishList();
+            document.getElementById('productForm').scrollIntoView({behavior: 'smooth'});
+        };
+
+        window.cancelForm = function() {
+            document.getElementById('productForm').style.display = 'none';
+            document.querySelector('#productForm form').reset();
+            editingId = null;
+            finishingOptions = [];
+            updateFinishList();
+            document.getElementById('imgPreview').innerHTML = '';
+        };
+
+        window.previewImg = function() {
+            const url = document.getElementById('pImage').value;
+            const preview = document.getElementById('imgPreview');
+            if (url) {
+                preview.innerHTML = `<img src="${url}" onerror="this.src=''; this.alt='Failed to load';">`;
+            } else {
+                preview.innerHTML = '';
+            }
+        };
+
+        window.loadFinishOptions = function() {
+            const cat = document.getElementById('fCategory').value;
+            const sel = document.getElementById('fOption');
+            
+            if (!cat) {
+                sel.disabled = true;
+                sel.innerHTML = '<option value="">Choose category first</option>';
+                return;
+            }
+
+            sel.disabled = false;
+            sel.innerHTML = '<option value="">Select option</option>' +
+                FINISH_OPTIONS[cat].map((opt, i) => 
+                    `<option value="${i}">${opt.name} (+$${opt.price})</option>`
+                ).join('');
+        };
+
+        window.addFinishOption = function() {
+            const cat = document.getElementById('fCategory').value;
+            const optIdx = document.getElementById('fOption').value;
+
+            if (!cat || optIdx === '') {
+                alert('Please select category and option');
+                return;
+            }
+
+            const opt = FINISH_OPTIONS[cat][optIdx];
+            const exists = finishingOptions.find(f => f.category === cat && f.name === opt.name);
+            
+            if (exists) {
+                alert('This option is already added');
+                return;
+            }
+
+            finishingOptions.push({
+                category: cat,
+                name: opt.name,
+                price: opt.price,
+                description: opt.desc
+            });
+
+            updateFinishList();
+            document.getElementById('fCategory').value = '';
+            document.getElementById('fOption').disabled = true;
+            document.getElementById('fOption').innerHTML = '<option value="">Choose category first</option>';
+        };
+
+        window.removeFinish = function(idx) {
+            finishingOptions.splice(idx, 1);
+            updateFinishList();
+        };
+
+        function updateFinishList() {
+            const list = document.getElementById('finishList');
+            
+            if (finishingOptions.length === 0) {
+                list.innerHTML = '<p style="color:#999; text-align:center; margin-top:10px;">No options added</p>';
+                return;
+            }
+
+            list.innerHTML = finishingOptions.map((f, i) => `
+                <div class="finish-option">
+                    <div class="finish-header">
+                        <div>
+                            <span class="badge badge-category">${f.category}</span>
+                            <span class="badge badge-price">+$${f.price}</span>
+                            <div style="margin-top:5px;"><strong>${f.name}</strong></div>
+                            <div style="color:#666; font-size:0.9rem;">${f.description}</div>
+                        </div>
+                        <button type="button" class="btn btn-danger" onclick="removeFinish(${i})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.saveProduct = async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('pName').value;
+            const category = document.getElementById('pCategory').value;
+            const price = document.getElementById('pPrice').value;
+
+            if (!name || !category || !price) {
+                alert('Please fill required fields');
+                return;
+            }
+
+            if (finishingOptions.length === 0) {
+                alert('Please add at least one finishing option');
+                return;
+            }
+
+            const product = {
+                name,
+                category,
+                basePrice: parseFloat(price),
+                description: document.getElementById('pDescription').value,
+                maxWidth: parseInt(document.getElementById('pMaxWidth').value),
+                maxHeight: parseInt(document.getElementById('pMaxHeight').value),
+                imageUrl: document.getElementById('pImage').value,
+                active: document.getElementById('pActive').value === 'true',
+                finishingOptions,
+                sortOrder: 0
+            };
+
+            try {
+                if (editingId) {
+                    await update(ref(db, `products/${editingId}`), product);
+                    showAlert('Product updated!', 'success');
+                } else {
+                    await push(ref(db, 'products'), product);
+                    showAlert('Product added!', 'success');
+                }
+                cancelForm();
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.editProduct = function(id) {
+            const p = products[id];
+            editingId = id;
+
+            document.getElementById('productForm').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Edit Product';
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pCategory').value = p.category;
+            document.getElementById('pPrice').value = p.basePrice;
+            document.getElementById('pDescription').value = p.description || '';
+            document.getElementById('pMaxWidth').value = p.maxWidth;
+            document.getElementById('pMaxHeight').value = p.maxHeight;
+            document.getElementById('pImage').value = p.imageUrl || '';
+            document.getElementById('pActive').value = p.active ? 'true' : 'false';
+            
+            finishingOptions = p.finishingOptions || [];
+            updateFinishList();
+            previewImg();
+            
+            document.getElementById('productForm').scrollIntoView({behavior: 'smooth'});
+        };
+
+        window.deleteProduct = async function(id) {
+            if (!confirm('Delete this product?')) return;
+            try {
+                await remove(ref(db, `products/${id}`));
+                showAlert('Product deleted', 'success');
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.saveCategory = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('catName').value;
+            const desc = document.getElementById('catDesc').value;
+
+            try {
+                await push(ref(db, 'categories'), {name, description: desc, sortOrder: 0});
+                showAlert('Category added!', 'success');
+                e.target.reset();
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.deleteCategory = async function(id) {
+            if (!confirm('Delete this category?')) return;
+            try {
+                await remove(ref(db, `categories/${id}`));
+                showAlert('Category deleted', 'success');
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.saveSettings = async function(e) {
+            e.preventDefault();
+            const settings = {
+                businessName: document.getElementById('bizName').value,
+                email: document.getElementById('bizEmail').value,
+                phone: document.getElementById('bizPhone').value
+            };
+
+            try {
+                await set(ref(db, 'settings'), settings);
+                showAlert('Settings saved!', 'success');
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.logout = function() {
+            if (confirm('Logout?')) {
+                sessionStorage.removeItem('adminAuth');
+                window.location.href = './admin-login.html';
+            }
+        };
+
+        function showAlert(msg, type) {
+            const box = document.getElementById('alertBox');
+            box.className = `alert alert-${type}`;
+            box.textContent = msg;
+            setTimeout(() => box.className = 'alert', 3000);
+        }
+    </script>
+</body>
+</html>
