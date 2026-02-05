@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Firebase Setup Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #1D3557; margin-bottom: 20px; }
+        .status { padding: 20px; margin: 20px 0; border-radius: 8px; font-weight: bold; }
+        .status.loading { background: #fff3cd; color: #856404; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .btn { padding: 15px 30px; background: #0066cc; color: white; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; font-weight: bold; margin: 10px 5px; }
+        .btn:hover { background: #0052a3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .data-display { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; max-height: 400px; overflow-y: auto; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .step { background: #e7f3ff; padding: 15px; margin: 15px 0; border-left: 4px solid #0066cc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 TC SignLab - Firebase Setup Tool</h1>
+        <p style="margin-bottom: 20px; color: #666;">This tool will check and fix your Firebase database</p>
+
+        <div id="status" class="status loading">Connecting to Firebase...</div>
+
+        <div class="step">
+            <h3>Step 1: Check Current Data</h3>
+            <button class="btn" onclick="checkDatabase()">Check Database</button>
+        </div>
+
+        <div id="dataDisplay" class="data-display" style="display: none;"></div>
+
+        <div class="step">
+            <h3>Step 2: Initialize Default Data</h3>
+            <p style="margin: 10px 0; color: #666;">This will create default categories and finishing options</p>
+            <button class="btn" onclick="initializeDefaults()">Initialize Database</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Test Admin Panel</h3>
+            <p style="margin: 10px 0; color: #666;">After initialization, open admin panel</p>
+            <button class="btn" onclick="window.open('admin-no-password.html', '_blank')">Open Admin Panel</button>
+        </div>
+
+        <div class="step" style="background: #fff3cd; border-left-color: #ffc107;">
+            <h3>⚠️ Nuclear Option</h3>
+            <p style="margin: 10px 0; color: #856404;">Only use if nothing else works - deletes ALL data and recreates</p>
+            <button class="btn btn-danger" onclick="resetEverything()">Reset Everything</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const app = initializeApp({
+            apiKey: "AIzaSyAlrfBLg-yJtUzYYJKGfGICS_PQuGE8caY",
+            authDomain: "tcsignlab-admin.firebaseapp.com",
+            databaseURL: "https://tcsignlab-admin-default-rtdb.firebaseio.com",
+            projectId: "tcsignlab-admin",
+            storageBucket: "tcsignlab-admin.firebasestorage.app",
+            messagingSenderId: "382892123645",
+            appId: "1:382892123645:web:cf45e472749c66165d6594"
+        });
+
+        const db = getDatabase(app);
+
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+        }
+
+        updateStatus('✅ Connected to Firebase', 'success');
+
+        window.checkDatabase = async function() {
+            updateStatus('🔍 Checking database...', 'loading');
+            
+            try {
+                const [categoriesSnap, productsSnap, finishingSnap] = await Promise.all([
+                    get(ref(db, 'categories')),
+                    get(ref(db, 'products')),
+                    get(ref(db, 'finishingCategories'))
+                ]);
+
+                const data = {
+                    categories: categoriesSnap.val() || {},
+                    products: productsSnap.val() || {},
+                    finishingCategories: finishingSnap.val() || {}
+                };
+
+                const categoryCount = Object.keys(data.categories).length;
+                const productCount = Object.keys(data.products).length;
+                const finishingCount = Object.keys(data.finishingCategories).length;
+
+                let statusMessage = `
+                    <strong>Database Status:</strong><br>
+                    📁 Categories: ${categoryCount}<br>
+                    📦 Products: ${productCount}<br>
+                    🎨 Finishing Categories: ${finishingCount}<br><br>
+                `;
+
+                if (categoryCount === 0 && productCount === 0 && finishingCount === 0) {
+                    statusMessage += '<span style="color: #dc3545;">⚠️ Database is EMPTY! Click "Initialize Database" below.</span>';
+                    updateStatus(statusMessage, 'error');
+                } else {
+                    statusMessage += '<span style="color: #28a745;">✅ Database has data</span>';
+                    updateStatus(statusMessage, 'success');
+                }
+
+                document.getElementById('dataDisplay').style.display = 'block';
+                document.getElementById('dataDisplay').innerHTML = '<strong>Current Data:</strong><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+
+            } catch (err) {
+                updateStatus('❌ Error checking database: ' + err.message, 'error');
+                console.error(err);
+            }
+        };
+
+        window.initializeDefaults = async function() {
+            if (!confirm('Initialize database with default data?')) return;
+            
+            updateStatus('⏳ Creating default data...', 'loading');
+
+            try {
+                // Create default categories
+                await set(ref(db, 'categories'), {
+                    cat1: {
+                        name: 'Vinyl Banners',
+                        description: 'Custom vinyl banners',
+                        sortOrder: 0
+                    },
+                    cat2: {
+                        name: 'Mesh Banners',
+                        description: 'Mesh banners for windy conditions',
+                        sortOrder: 1
+                    },
+                    cat3: {
+                        name: 'Fabric Banners',
+                        description: 'Premium fabric banners',
+                        sortOrder: 2
+                    }
+                });
+
+                // Create default finishing options
+                await set(ref(db, 'finishingCategories'), {
+                    edges: {
+                        name: 'Edges',
+                        options: {
+                            opt1: {
+                                name: 'Hems & Grommets',
+                                price: 15,
+                                description: 'Hemmed edges with metal grommets every 2 feet'
+                            },
+                            opt2: {
+                                name: 'Heat Sealed Edges',
+                                price: 12,
+                                description: 'Clean sealed edges without hemming'
+                            },
+                            opt3: {
+                                name: 'Sewn Edges',
+                                price: 10,
+                                description: 'Double-stitched edges for durability'
+                            },
+                            opt4: {
+                                name: 'Raw Cut',
+                                price: 0,
+                                description: 'Unfinished edges (not recommended for outdoor use)'
+                            }
+                        }
+                    },
+                    mounting: {
+                        name: 'Mounting',
+                        options: {
+                            opt1: {
+                                name: 'Pole Pockets',
+                                price: 20,
+                                description: 'Top and bottom pole pockets for mounting'
+                            },
+                            opt2: {
+                                name: 'Grommets Only',
+                                price: 8,
+                                description: 'Metal grommets without hemming'
+                            },
+                            opt3: {
+                                name: 'Velcro Strips',
+                                price: 25,
+                                description: 'Industrial velcro for easy mounting'
+                            },
+                            opt4: {
+                                name: 'No Hardware',
+                                price: 0,
+                                description: 'No mounting hardware included'
+                            }
+                        }
+                    },
+                    reinforcement: {
+                        name: 'Reinforcement',
+                        options: {
+                            opt1: {
+                                name: 'Wind Slits',
+                                price: 10,
+                                description: 'Reinforced slits for wind resistance'
+                            },
+                            opt2: {
+                                name: 'Corner Reinforcement',
+                                price: 15,
+                                description: 'Extra reinforcement on all four corners'
+                            },
+                            opt3: {
+                                name: 'Rope & Grommets',
+                                price: 18,
+                                description: 'Includes nylon rope for hanging'
+                            },
+                            opt4: {
+                                name: 'Standard',
+                                price: 0,
+                                description: 'Standard construction without extras'
+                            }
+                        }
+                    },
+                    special: {
+                        name: 'Special Services',
+                        options: {
+                            opt1: {
+                                name: 'Custom Size Cut',
+                                price: 30,
+                                description: 'Precise custom sizing'
+                            },
+                            opt2: {
+                                name: 'Rush Production',
+                                price: 50,
+                                description: '24-hour turnaround time'
+                            },
+                            opt3: {
+                                name: 'Weather Coating',
+                                price: 35,
+                                description: 'Extra UV and weather protection'
+                            },
+                            opt4: {
+                                name: 'None',
+                                price: 0,
+                                description: 'No special services'
+                            }
+                        }
+                    }
+                });
+
+                updateStatus('✅ Database initialized successfully!<br>Now open the Admin Panel and you should see everything.', 'success');
+                
+                setTimeout(() => {
+                    checkDatabase();
+                }, 1000);
+
+            } catch (err) {
+                updateStatus('❌ Error initializing: ' + err.message, 'error');
+                console.error(err);
+            }
+        };
+
+        window.resetEverything = async function() {
+            if (!confirm('⚠️ This will DELETE ALL DATA and recreate! Are you absolutely sure?')) return;
+            if (!confirm('⚠️ LAST WARNING: This will delete ALL products, categories, and finishing options!')) return;
+
+            updateStatus('🔥 Deleting everything...', 'loading');
+
+            try {
+                // Delete everything
+                await Promise.all([
+                    remove(ref(db, 'categories')),
+                    remove(ref(db, 'products')),
+                    remove(ref(db, 'finishingCategories'))
+                ]);
+
+                updateStatus('✅ Everything deleted. Recreating defaults...', 'loading');
+                
+                setTimeout(() => {
+                    initializeDefaults();
+                }, 1000);
+
+            } catch (err) {
+                updateStatus('❌ Error resetting: ' + err.message, 'error');
+                console.error(err);
+            }
+        };
+
+        // Auto-check on load
+        setTimeout(() => {
+            checkDatabase();
+        }, 1000);
+    </script>
+</body>
+</html>
