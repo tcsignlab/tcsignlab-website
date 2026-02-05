@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TC SignLab Admin - Google Sheets</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .setup-notice { background: #fff3cd; border: 2px solid #ffc107; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .header { background: #1D3557; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .config-panel { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 2px solid #0066cc; }
+        .tabs { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .tab { padding: 10px 20px; background: #eee; border: none; margin-right: 10px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .tab.active { background: #0066cc; color: white; }
+        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; }
+        .tab-content.active { display: block; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        .item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border: 2px solid #dee2e6; }
+        .alert { padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        .finish-item { background: white; padding: 10px; margin: 5px 0; border: 2px solid #0066cc; border-radius: 5px; }
+        #productFormContainer { display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; font-weight: bold; }
+        .status.connected { background: #d4edda; color: #155724; }
+        .status.disconnected { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="setup-notice" id="setupNotice">
+        <h2>⚙️ Configuration Required</h2>
+        <p>Enter your Google Sheets credentials below to get started!</p>
+    </div>
+
+    <div class="header">
+        <h1>🏢 TC SignLab Admin Panel</h1>
+        <p style="margin-top: 10px; opacity: 0.9;">Powered by Google Sheets</p>
+    </div>
+
+    <div class="container">
+        <!-- CONFIGURATION PANEL -->
+        <div class="config-panel">
+            <h2>🔑 Google Sheets Configuration</h2>
+            <div id="connectionStatus" class="status disconnected">Not Connected</div>
+            
+            <label>Sheet ID (from your Google Sheet URL):</label>
+            <input type="text" id="sheetId" placeholder="e.g., 1abc123XYZ456-EXAMPLE">
+            
+            <label>API Key (from Google Cloud Console):</label>
+            <input type="text" id="apiKey" placeholder="AIza...">
+            
+            <button class="btn btn-primary" onclick="saveConfig()">💾 Save & Connect</button>
+            <button class="btn btn-success" onclick="testConnection()">🔍 Test Connection</button>
+            
+            <div id="configAlert"></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">Products (<span id="productCount">0</span>)</button>
+            <button class="tab" onclick="switchTab('categories')">Categories (<span id="categoryCount">0</span>)</button>
+            <button class="tab" onclick="switchTab('finishing')">Finishing Options (<span id="finishingCount">0</span>)</button>
+        </div>
+
+        <!-- PRODUCTS TAB -->
+        <div id="productsTab" class="tab-content active">
+            <h2>Products Management</h2>
+            <p style="color: #666; margin: 10px 0;">Note: To add/edit products, edit the Google Sheet directly, then click "Refresh Data" below.</p>
+            <button class="btn btn-success" onclick="loadAllData()">🔄 Refresh Data from Sheet</button>
+            <button class="btn btn-primary" onclick="openSheet('products')">📝 Edit in Google Sheets</button>
+            
+            <div id="productsList"></div>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="categoriesTab" class="tab-content">
+            <h2>Product Categories</h2>
+            <p style="color: #666; margin: 10px 0;">To add/edit categories, edit the Google Sheet directly.</p>
+            <button class="btn btn-success" onclick="loadAllData()">🔄 Refresh Data</button>
+            <button class="btn btn-primary" onclick="openSheet('categories')">📝 Edit in Google Sheets</button>
+            <div id="categoriesList"></div>
+        </div>
+
+        <!-- FINISHING OPTIONS TAB -->
+        <div id="finishingTab" class="tab-content">
+            <h2>Finishing Options Management</h2>
+            <p style="color: #666; margin: 10px 0;">To add/edit finishing options, edit the Google Sheet directly.</p>
+            <button class="btn btn-success" onclick="loadAllData()">🔄 Refresh Data</button>
+            <button class="btn btn-primary" onclick="openSheet('finishingCategories')">📝 Edit in Google Sheets</button>
+            <div id="finishingList"></div>
+        </div>
+    </div>
+
+    <script>
+        let SHEET_ID = localStorage.getItem('sheetId') || '';
+        let API_KEY = localStorage.getItem('apiKey') || '';
+        let categories = {};
+        let products = {};
+        let finishingCats = {};
+
+        // Load saved config on startup
+        if (SHEET_ID && API_KEY) {
+            document.getElementById('sheetId').value = SHEET_ID;
+            document.getElementById('apiKey').value = API_KEY;
+            document.getElementById('setupNotice').style.display = 'none';
+            loadAllData();
+        }
+
+        function saveConfig() {
+            SHEET_ID = document.getElementById('sheetId').value.trim();
+            API_KEY = document.getElementById('apiKey').value.trim();
+            
+            if (!SHEET_ID || !API_KEY) {
+                showAlert('configAlert', 'Please fill in both fields', 'error');
+                return;
+            }
+
+            localStorage.setItem('sheetId', SHEET_ID);
+            localStorage.setItem('apiKey', API_KEY);
+            
+            showAlert('configAlert', '✅ Configuration saved!', 'success');
+            document.getElementById('setupNotice').style.display = 'none';
+            
+            testConnection();
+        }
+
+        async function testConnection() {
+            if (!SHEET_ID || !API_KEY) {
+                showAlert('configAlert', '⚠️ Please configure credentials first', 'error');
+                return;
+            }
+
+            showStatus('Testing connection...', 'disconnected');
+            
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/categories?key=${API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Connection failed. Check your Sheet ID and API Key.');
+                }
+
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 0) {
+                    showStatus(`✅ Connected! Found ${data.values.length - 1} categories`, 'connected');
+                    showAlert('configAlert', '✅ Connection successful!', 'success');
+                    loadAllData();
+                } else {
+                    showStatus('⚠️ Connected but no data found', 'disconnected');
+                }
+            } catch (err) {
+                showStatus('❌ Connection failed', 'disconnected');
+                showAlert('configAlert', '❌ Error: ' + err.message, 'error');
+            }
+        }
+
+        async function loadAllData() {
+            if (!SHEET_ID || !API_KEY) {
+                alert('⚠️ Please configure credentials first');
+                return;
+            }
+
+            try {
+                // Load categories
+                const catUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/categories?key=${API_KEY}`;
+                const catResponse = await fetch(catUrl);
+                const catData = await catResponse.json();
+                
+                if (catData.values) {
+                    categories = {};
+                    const headers = catData.values[0];
+                    for (let i = 1; i < catData.values.length; i++) {
+                        const row = catData.values[i];
+                        categories[row[0]] = {
+                            name: row[1],
+                            description: row[2] || ''
+                        };
+                    }
+                }
+
+                // Load products
+                const prodUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/products?key=${API_KEY}`;
+                const prodResponse = await fetch(prodUrl);
+                const prodData = await prodResponse.json();
+                
+                if (prodData.values) {
+                    products = {};
+                    for (let i = 1; i < prodData.values.length; i++) {
+                        const row = prodData.values[i];
+                        if (row[0]) { // Only if ID exists
+                            products[row[0]] = {
+                                name: row[1],
+                                category: row[2],
+                                basePrice: parseFloat(row[3]),
+                                description: row[4] || '',
+                                maxWidth: parseInt(row[5]) || 200,
+                                maxHeight: parseInt(row[6]) || 150,
+                                imageUrl: row[7] || '',
+                                active: row[8] === 'TRUE',
+                                finishingOptions: row[9] ? JSON.parse(row[9]) : []
+                            };
+                        }
+                    }
+                }
+
+                // Load finishing categories
+                const finUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/finishingCategories?key=${API_KEY}`;
+                const finResponse = await fetch(finUrl);
+                const finData = await finResponse.json();
+                
+                if (finData.values) {
+                    finishingCats = {};
+                    for (let i = 1; i < finData.values.length; i++) {
+                        const row = finData.values[i];
+                        finishingCats[row[0]] = {
+                            name: row[1],
+                            options: row[2] ? JSON.parse(row[2]) : {}
+                        };
+                    }
+                }
+
+                displayAll();
+                showStatus('✅ Data loaded successfully', 'connected');
+                
+            } catch (err) {
+                showStatus('❌ Error loading data', 'disconnected');
+                alert('Error loading data: ' + err.message);
+            }
+        }
+
+        function displayAll() {
+            displayProducts();
+            displayCategories();
+            displayFinishing();
+        }
+
+        function displayProducts() {
+            const container = document.getElementById('productsList');
+            const items = Object.entries(products).map(([id, p]) => ({ id, ...p }));
+            
+            document.getElementById('productCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="item"><p style="text-align: center; color: #999;">No products yet. Add them in Google Sheets!</p></div>';
+                return;
+            }
+
+            container.innerHTML = '<h3 style="margin-top: 30px;">Products:</h3>' + items.map(p => `
+                <div class="item">
+                    <h3>${p.name}</h3>
+                    <p><strong>$${p.basePrice}/sq ft</strong> | ${p.maxWidth}"W x ${p.maxHeight}"H</p>
+                    <p><strong>Category:</strong> ${categories[p.category]?.name || 'N/A'}</p>
+                    ${p.description ? `<p>${p.description}</p>` : ''}
+                    ${p.imageUrl ? `<img src="${p.imageUrl}" style="max-width: 200px; margin: 10px 0; border-radius: 5px;">` : ''}
+                    ${p.finishingOptions?.length ? `
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                            <strong>Finishing Options (${p.finishingOptions.length}):</strong>
+                            <ul>${p.finishingOptions.map(f => `<li>${f.category}: ${f.name} (+$${f.price})</li>`).join('')}</ul>
+                        </div>
+                    ` : '<p style="color: red;">⚠️ No finishing options</p>'}
+                    <p><strong>Status:</strong> ${p.active ? '✅ Active' : '❌ Inactive'}</p>
+                </div>
+            `).join('');
+        }
+
+        function displayCategories() {
+            const container = document.getElementById('categoriesList');
+            const items = Object.entries(categories).map(([id, c]) => ({ id, ...c }));
+            
+            document.getElementById('categoryCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="item"><p style="color: #999;">No categories yet</p></div>';
+                return;
+            }
+
+            container.innerHTML = items.map(c => `
+                <div class="item">
+                    <strong style="font-size: 1.2rem;">${c.name}</strong>
+                    ${c.description ? `<p style="color: #666; margin-top: 5px;">${c.description}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function displayFinishing() {
+            const container = document.getElementById('finishingList');
+            const items = Object.entries(finishingCats).map(([id, c]) => ({ id, ...c }));
+            
+            document.getElementById('finishingCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="item"><p style="color: #999;">No finishing categories yet</p></div>';
+                return;
+            }
+
+            container.innerHTML = items.map(cat => `
+                <div class="item">
+                    <h3>${cat.name}</h3>
+                    ${Object.entries(cat.options || {}).map(([optId, opt]) => `
+                        <div style="background: white; padding: 10px; margin: 5px 0; border-left: 4px solid #0066cc; border-radius: 4px;">
+                            <strong>${opt.name}</strong> - $${opt.price}
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">${opt.description}</p>
+                        </div>
+                    `).join('') || '<p style="color: #999;">No options yet</p>'}
+                </div>
+            `).join('');
+        }
+
+        function openSheet(sheetName) {
+            if (!SHEET_ID) {
+                alert('⚠️ Please configure your Sheet ID first');
+                return;
+            }
+            window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=0`, '_blank');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('connectionStatus');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        console.log('✅ Google Sheets Admin Panel loaded');
+    </script>
+</body>
+</html>
